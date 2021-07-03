@@ -1,0 +1,4 @@
+*.o
+*.ini
+canvas
+imgui_canvas.code-workspace
