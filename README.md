@@ -13,3 +13,7 @@ Update `IMGUI_DIR` Makefile to compile.
 * `delete` - Delete the hovered shape
 * `up/down` - Change the dimension along the hovered handle
 * `left/right` - Change angle of the hovered handle
+
+### More usage examples
+
+![GIF of demonstration](demo_adv.gif)
