@@ -99,10 +99,10 @@ int main (int argc, char** argv) {
   // ------------------------------------------------------------------------------------------------------------------
   int width = 320, height = 240;
   float imageAspectRatio = (float)height/(float)width;
-  uint8_t* imageData = new uint8_t[width*height]();
+  uint16_t* imageData = new uint16_t[width*height]();
   for (int y = 0; y < height; y++)
     for (int x = 0; x < width; x++)
-      imageData[x + y*width] = (uint8_t)ImPow(2.0,16)*(float)x/(float)width;
+      imageData[x + y*width] = (uint16_t)ImPow(2.0,16)*(float)x/(float)width;
 
   uint8_t* maskData = new uint8_t[width*height]();
   bool maskEnable = true;
@@ -113,7 +113,7 @@ int main (int argc, char** argv) {
 
   static GLuint imageTexture, maskTexture, compositeTexture, renderBuffers, frameBuffers;
 
-  shader.SetupTexture(GL_TEXTURE0, &imageTexture, width, height, imageData);
+  shader.SetupTexture(GL_TEXTURE0, &imageTexture, width, height, imageData, GL_RED, 1, GL_TEXTURE_2D, 0, 0, GL_UNSIGNED_SHORT);
   shader.setUniform("image", 0);
 
   shader.SetupTexture(GL_TEXTURE1, &maskTexture, width, height, maskData);
@@ -186,7 +186,7 @@ int main (int argc, char** argv) {
 
       ImGui::Separator(); // ==========================================================================================
 
-      shader.UpdateTexture(GL_TEXTURE0, &imageTexture, width, height, imageData);
+      shader.UpdateTexture(GL_TEXTURE0, &imageTexture, width, height, imageData, GL_RED, 1, GL_TEXTURE_2D, 0, 0, GL_UNSIGNED_SHORT);
       shader.setUniform("image", 0);
 
       shader.UpdateTexture(GL_TEXTURE1, &maskTexture, width, height, maskData);
