@@ -113,10 +113,10 @@ int main (int argc, char** argv) {
 
   static GLuint imageTexture, maskTexture, compositeTexture, renderBuffers, frameBuffers;
 
-  shader.SetupTexture(GL_TEXTURE0, &imageTexture, width, height, maskData);
+  shader.SetupTexture(GL_TEXTURE0, &imageTexture, width, height, imageData);
   shader.setUniform("image", 0);
 
-  shader.SetupTexture(GL_TEXTURE1, &maskTexture, width, height, imageData);
+  shader.SetupTexture(GL_TEXTURE1, &maskTexture, width, height, maskData);
   shader.setUniform("mask", 1);
 
   shader.SetupTexture(GL_TEXTURE2, &compositeTexture, width, height, 0, GL_RGBA);
