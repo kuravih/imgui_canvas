@@ -85,7 +85,15 @@ public:
     ImColor getColor() const {
       return color;
     }
-    void move(const ImVec2& _delta);
+    // ----------------------------------------------------------------------------------------------------------------
+    void move(const ImVec2& _delta) {
+      position.x = position.x+_delta.x;
+      position.y = position.y+_delta.y;
+    }
+    void moveTo(const ImVec2& _position) {
+      position = _position;
+    }
+    // ----------------------------------------------------------------------------------------------------------------
     CtrlPoint(const ImVec2 _position) : position(_position) {}
     CtrlPoint(const float x, const float y) : position({x,y}) {}
     CtrlPoint() = default;
@@ -206,7 +214,9 @@ public:
     return (bool)m_clip?((a1 < b1)&&(a2 < b2)):((a1 > b1)||(a2 > b2));
   }
   void MoveCenter(const ImVec2& _delta);
+  void MoveCenter(const ImVec2& _delta, const ImVec2& _canvasSize);
   void MoveCtrlPoint(int _ctrlPointIndex, const ImVec2& _delta);
+  void MoveCtrlPoint(int _ctrlPointIndex, const ImVec2& _delta, const ImVec2& _canvasSize);
   bool isInside(const ImVec2& point) const;
 private:
   std::string m_label;

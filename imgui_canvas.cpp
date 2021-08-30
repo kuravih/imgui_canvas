@@ -31,30 +31,6 @@
 
 
 // --------------------------------------------------------------------------------------------------------------------
-void ImGuiShape::CtrlPoint::move(const ImVec2& _delta) {
-  position = position+_delta;
-}
-// --------------------------------------------------------------------------------------------------------------------
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// --------------------------------------------------------------------------------------------------------------------
 uint ImGuiShape::nextIndex = 0;
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -298,6 +274,51 @@ void ImGuiShape::MoveCenter(const ImVec2& _delta) {
 }
 
 // --------------------------------------------------------------------------------------------------------------------
+void ImGuiShape::MoveCenter(const ImVec2& _delta, const ImVec2& _canvasSize) {
+  ImVec2 center, delta;
+  if (getSelected()) {
+    // ----------------------------------------------------------------------------------------------------------------
+    center = m_center.position;
+    m_center.move(_delta);
+    m_center.moveTo(ImClamp(m_center.position,{0,0},_canvasSize));
+    delta = m_center.position - center;
+    // ----------------------------------------------------------------------------------------------------------------
+    switch (m_type) {
+      case ImGuiCanvasShapeType::Circle:
+        for (int ctrlPointIndex = 0; ctrlPointIndex < m_ctrlPoints.size(); ctrlPointIndex++)
+          m_ctrlPoints[ctrlPointIndex].move(delta);
+        break;
+      case ImGuiCanvasShapeType::Ellipse:
+        for (int ctrlPointIndex = 0; ctrlPointIndex < m_ctrlPoints.size(); ctrlPointIndex++)
+          m_ctrlPoints[ctrlPointIndex].move(delta);
+        break;
+      case ImGuiCanvasShapeType::Square:
+        for (int ctrlPointIndex = 0; ctrlPointIndex < m_ctrlPoints.size(); ctrlPointIndex++)
+          m_ctrlPoints[ctrlPointIndex].move(delta);
+        break;
+      case ImGuiCanvasShapeType::Rectangle:
+        for (int ctrlPointIndex = 0; ctrlPointIndex < m_ctrlPoints.size(); ctrlPointIndex++)
+          m_ctrlPoints[ctrlPointIndex].move(delta);
+        break;
+      case ImGuiCanvasShapeType::HLine:
+        // m_CtrlPoints[_ctrlPointIndex].position.y = m_CtrlPoints[_ctrlPointIndex].position.y + _delta.y;
+        // m_Center.position.y = m_CtrlPoints[_ctrlPointIndex].position.y;
+        // m_CtrlPoints[0].position.y = m_Center.position.y;
+        // m_CtrlPoints[1].position.y = m_Center.position.y;
+        break;
+      case ImGuiCanvasShapeType::VLine:
+        // m_CtrlPoints[_ctrlPointIndex].position.x = m_CtrlPoints[_ctrlPointIndex].position.x + _delta.x;
+        // m_Center.position.x = m_CtrlPoints[_ctrlPointIndex].position.x;
+        // m_CtrlPoints[0].position.x = m_Center.position.x;
+        // m_CtrlPoints[1].position.x = m_Center.position.x;
+        break;
+      default:
+        break;
+    }
+  }
+}
+
+// --------------------------------------------------------------------------------------------------------------------
 void ImGuiShape::MoveCtrlPoint(int _ctrlPointIndex, const ImVec2& _delta) {
   float rectangle_radius, rectangle_angle;
   if (m_ctrlPoints[_ctrlPointIndex].selected) {
@@ -322,6 +343,66 @@ void ImGuiShape::MoveCtrlPoint(int _ctrlPointIndex, const ImVec2& _delta) {
         break;
       case ImGuiCanvasShapeType::Rectangle:
         m_ctrlPoints[_ctrlPointIndex].move(_delta);
+        if (_ctrlPointIndex == 0) {
+          rectangle_radius = getAbsRadius(1);
+          rectangle_angle = getAngle(0) + IM_PI/2;
+          m_ctrlPoints[1].position = getCenter().position + ImVec2(rectangle_radius*ImCos(rectangle_angle), rectangle_radius*ImSin(rectangle_angle));
+        } else {
+          rectangle_radius = getAbsRadius(0);
+          rectangle_angle = getAngle(1) - IM_PI/2;
+          m_ctrlPoints[0].position = getCenter().position + ImVec2(rectangle_radius*ImCos(rectangle_angle), rectangle_radius*ImSin(rectangle_angle));
+        }
+        break;
+      case ImGuiCanvasShapeType::HLine:
+        // m_CtrlPoints[_ctrlPointIndex].position.y = m_CtrlPoints[_ctrlPointIndex].position.y + _delta.y;
+        // m_Center.position.y = m_CtrlPoints[_ctrlPointIndex].position.y;
+        // m_CtrlPoints[0].position.y = m_Center.position.y;
+        // m_CtrlPoints[1].position.y = m_Center.position.y;
+        break;
+      case ImGuiCanvasShapeType::VLine:
+        // m_CtrlPoints[_ctrlPointIndex].position.x = m_CtrlPoints[_ctrlPointIndex].position.x + _delta.x;
+        // m_Center.position.x = m_CtrlPoints[_ctrlPointIndex].position.x;
+        // m_CtrlPoints[0].position.x = m_Center.position.x;
+        // m_CtrlPoints[1].position.x = m_Center.position.x;
+        break;
+      default:
+        break;
+    }
+  }
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+void ImGuiShape::MoveCtrlPoint(int _ctrlPointIndex, const ImVec2& _delta, const ImVec2& _canvasSize) {
+  ImVec2 point, delta;
+  float rectangle_radius, rectangle_angle;
+  if (m_ctrlPoints[_ctrlPointIndex].selected) {
+    // ----------------------------------------------------------------------------------------------------------------
+    point = m_ctrlPoints[_ctrlPointIndex].position;
+    m_ctrlPoints[_ctrlPointIndex].move(_delta);
+    m_ctrlPoints[_ctrlPointIndex].moveTo(ImClamp(m_ctrlPoints[_ctrlPointIndex].position,{0,0},_canvasSize));
+    delta = m_ctrlPoints[_ctrlPointIndex].position - point;
+    // ----------------------------------------------------------------------------------------------------------------
+    switch (m_type) {
+      case ImGuiCanvasShapeType::Circle:
+        m_ctrlPoints[_ctrlPointIndex].move(delta);
+        break;
+      case ImGuiCanvasShapeType::Ellipse:
+        m_ctrlPoints[_ctrlPointIndex].move(delta);
+        if (_ctrlPointIndex == 0) {
+          rectangle_radius = getAbsRadius(1);
+          rectangle_angle = getAngle(0) + IM_PI/2;
+          m_ctrlPoints[1].position = getCenter().position + ImVec2(rectangle_radius*ImCos(rectangle_angle), rectangle_radius*ImSin(rectangle_angle));
+        } else {
+          rectangle_radius = getAbsRadius(0);
+          rectangle_angle = getAngle(1) - IM_PI/2;
+          m_ctrlPoints[0].position = getCenter().position + ImVec2(rectangle_radius*ImCos(rectangle_angle), rectangle_radius*ImSin(rectangle_angle));
+        }
+        break;
+      case ImGuiCanvasShapeType::Square:
+        m_ctrlPoints[_ctrlPointIndex].move(delta);
+        break;
+      case ImGuiCanvasShapeType::Rectangle:
+        m_ctrlPoints[_ctrlPointIndex].move(delta);
         if (_ctrlPointIndex == 0) {
           rectangle_radius = getAbsRadius(1);
           rectangle_angle = getAngle(0) + IM_PI/2;
@@ -514,7 +595,7 @@ bool ImGui::DrawShapes(const char* _label, const ImVec2& _origin, std::vector<Im
 
       if (_shapes[shapeIndex].m_center.getSelected()&&IsMouseDragging(0)) {
         centerDelta = GetIO().MouseDelta/_scale;
-        _shapes[shapeIndex].MoveCenter(centerDelta);
+        _shapes[shapeIndex].MoveCenter(centerDelta, _size);
         centerModified |= true;
       }
 
@@ -543,7 +624,7 @@ bool ImGui::DrawShapes(const char* _label, const ImVec2& _origin, std::vector<Im
 
         if (_shapes[shapeIndex].m_ctrlPoints[ctrlPointIndex].getSelected()&&IsMouseDragging(0)) {
           ctrlPointDelta = GetIO().MouseDelta/_scale;
-          _shapes[shapeIndex].MoveCtrlPoint(ctrlPointIndex, ctrlPointDelta);
+          _shapes[shapeIndex].MoveCtrlPoint(ctrlPointIndex, ctrlPointDelta, _size);
           ctrlPointModified |= true;
         }
 
@@ -561,7 +642,7 @@ bool ImGui::DrawShapes(const char* _label, const ImVec2& _origin, std::vector<Im
               angle = _shapes[shapeIndex].getAngle() - IM_PI/2.0;
               ctrlPointDelta = ImVec2(ImCos(angle),ImSin(angle));
               _shapes[shapeIndex].m_ctrlPoints[ctrlPointIndex].select();
-              _shapes[shapeIndex].MoveCtrlPoint(ctrlPointIndex, ctrlPointDelta);
+              _shapes[shapeIndex].MoveCtrlPoint(ctrlPointIndex, ctrlPointDelta, _size);
               ctrlPointModified |= true;
               _shapes[shapeIndex].m_ctrlPoints[ctrlPointIndex].deselect();
               break;
@@ -569,7 +650,7 @@ bool ImGui::DrawShapes(const char* _label, const ImVec2& _origin, std::vector<Im
               angle = _shapes[shapeIndex].getAngle() - IM_PI/2.0;
               ctrlPointDelta = ImVec2(ImCos(angle),ImSin(angle));
               _shapes[shapeIndex].m_ctrlPoints[ctrlPointIndex].select();
-              _shapes[shapeIndex].MoveCtrlPoint(ctrlPointIndex, ctrlPointDelta);
+              _shapes[shapeIndex].MoveCtrlPoint(ctrlPointIndex, ctrlPointDelta, _size);
               ctrlPointModified |= true;
               _shapes[shapeIndex].m_ctrlPoints[ctrlPointIndex].deselect();
               break;
@@ -577,7 +658,7 @@ bool ImGui::DrawShapes(const char* _label, const ImVec2& _origin, std::vector<Im
               angle = _shapes[shapeIndex].getAngle() - IM_PI/2.0;
               ctrlPointDelta = ImVec2(ImCos(angle),ImSin(angle));
               _shapes[shapeIndex].m_ctrlPoints[ctrlPointIndex].select();
-              _shapes[shapeIndex].MoveCtrlPoint(ctrlPointIndex, ctrlPointDelta);
+              _shapes[shapeIndex].MoveCtrlPoint(ctrlPointIndex, ctrlPointDelta, _size);
               ctrlPointModified |= true;
               _shapes[shapeIndex].m_ctrlPoints[ctrlPointIndex].deselect();
               break;
@@ -585,7 +666,7 @@ bool ImGui::DrawShapes(const char* _label, const ImVec2& _origin, std::vector<Im
               angle = _shapes[shapeIndex].getAngle() - IM_PI/2.0;
               ctrlPointDelta = ImVec2(ImCos(angle),ImSin(angle));
               _shapes[shapeIndex].m_ctrlPoints[ctrlPointIndex].select();
-              _shapes[shapeIndex].MoveCtrlPoint(ctrlPointIndex, ctrlPointDelta);
+              _shapes[shapeIndex].MoveCtrlPoint(ctrlPointIndex, ctrlPointDelta, _size);
               ctrlPointModified |= true;
               _shapes[shapeIndex].m_ctrlPoints[ctrlPointIndex].deselect();
               break;
@@ -607,7 +688,7 @@ bool ImGui::DrawShapes(const char* _label, const ImVec2& _origin, std::vector<Im
               angle = _shapes[shapeIndex].getAngle();
               ctrlPointDelta = ImVec2(ImCos(angle),ImSin(angle));
               _shapes[shapeIndex].m_ctrlPoints[ctrlPointIndex].select();
-              _shapes[shapeIndex].MoveCtrlPoint(ctrlPointIndex, ctrlPointDelta);
+              _shapes[shapeIndex].MoveCtrlPoint(ctrlPointIndex, ctrlPointDelta, _size);
               ctrlPointModified |= true;
               _shapes[shapeIndex].m_ctrlPoints[ctrlPointIndex].deselect();
               break;
@@ -615,7 +696,7 @@ bool ImGui::DrawShapes(const char* _label, const ImVec2& _origin, std::vector<Im
               angle = _shapes[shapeIndex].getAngle();
               ctrlPointDelta = ImVec2(ImCos(angle),ImSin(angle));
               _shapes[shapeIndex].m_ctrlPoints[ctrlPointIndex].select();
-              _shapes[shapeIndex].MoveCtrlPoint(ctrlPointIndex, ctrlPointDelta);
+              _shapes[shapeIndex].MoveCtrlPoint(ctrlPointIndex, ctrlPointDelta, _size);
               ctrlPointModified |= true;
               _shapes[shapeIndex].m_ctrlPoints[ctrlPointIndex].deselect();
               break;
@@ -623,7 +704,7 @@ bool ImGui::DrawShapes(const char* _label, const ImVec2& _origin, std::vector<Im
               angle = _shapes[shapeIndex].getAngle();
               ctrlPointDelta = ImVec2(ImCos(angle),ImSin(angle));
               _shapes[shapeIndex].m_ctrlPoints[ctrlPointIndex].select();
-              _shapes[shapeIndex].MoveCtrlPoint(ctrlPointIndex, ctrlPointDelta);
+              _shapes[shapeIndex].MoveCtrlPoint(ctrlPointIndex, ctrlPointDelta, _size);
               ctrlPointModified |= true;
               _shapes[shapeIndex].m_ctrlPoints[ctrlPointIndex].deselect();
               break;
@@ -631,7 +712,7 @@ bool ImGui::DrawShapes(const char* _label, const ImVec2& _origin, std::vector<Im
               angle = _shapes[shapeIndex].getAngle();
               ctrlPointDelta = ImVec2(ImCos(angle),ImSin(angle));
               _shapes[shapeIndex].m_ctrlPoints[ctrlPointIndex].select();
-              _shapes[shapeIndex].MoveCtrlPoint(ctrlPointIndex, ctrlPointDelta);
+              _shapes[shapeIndex].MoveCtrlPoint(ctrlPointIndex, ctrlPointDelta, _size);
               ctrlPointModified |= true;
               _shapes[shapeIndex].m_ctrlPoints[ctrlPointIndex].deselect();
               break;
@@ -653,7 +734,7 @@ bool ImGui::DrawShapes(const char* _label, const ImVec2& _origin, std::vector<Im
               angle = _shapes[shapeIndex].getAngle() - IM_PI/2.0;
               ctrlPointDelta = ImVec2(-ImCos(angle),-ImSin(angle));
               _shapes[shapeIndex].m_ctrlPoints[ctrlPointIndex].select();
-              _shapes[shapeIndex].MoveCtrlPoint(ctrlPointIndex, ctrlPointDelta);
+              _shapes[shapeIndex].MoveCtrlPoint(ctrlPointIndex, ctrlPointDelta, _size);
               ctrlPointModified |= true;
               _shapes[shapeIndex].m_ctrlPoints[ctrlPointIndex].deselect();
               break;
@@ -661,7 +742,7 @@ bool ImGui::DrawShapes(const char* _label, const ImVec2& _origin, std::vector<Im
               angle = _shapes[shapeIndex].getAngle() - IM_PI/2.0;
               ctrlPointDelta = ImVec2(-ImCos(angle),-ImSin(angle));
               _shapes[shapeIndex].m_ctrlPoints[ctrlPointIndex].select();
-              _shapes[shapeIndex].MoveCtrlPoint(ctrlPointIndex, ctrlPointDelta);
+              _shapes[shapeIndex].MoveCtrlPoint(ctrlPointIndex, ctrlPointDelta, _size);
               ctrlPointModified |= true;
               _shapes[shapeIndex].m_ctrlPoints[ctrlPointIndex].deselect();
               break;
@@ -669,7 +750,7 @@ bool ImGui::DrawShapes(const char* _label, const ImVec2& _origin, std::vector<Im
               angle = _shapes[shapeIndex].getAngle() - IM_PI/2.0;
               ctrlPointDelta = ImVec2(-ImCos(angle),-ImSin(angle));
               _shapes[shapeIndex].m_ctrlPoints[ctrlPointIndex].select();
-              _shapes[shapeIndex].MoveCtrlPoint(ctrlPointIndex, ctrlPointDelta);
+              _shapes[shapeIndex].MoveCtrlPoint(ctrlPointIndex, ctrlPointDelta, _size);
               ctrlPointModified |= true;
               _shapes[shapeIndex].m_ctrlPoints[ctrlPointIndex].deselect();
               break;
@@ -677,7 +758,7 @@ bool ImGui::DrawShapes(const char* _label, const ImVec2& _origin, std::vector<Im
               angle = _shapes[shapeIndex].getAngle() - IM_PI/2.0;
               ctrlPointDelta = ImVec2(-ImCos(angle),-ImSin(angle));
               _shapes[shapeIndex].m_ctrlPoints[ctrlPointIndex].select();
-              _shapes[shapeIndex].MoveCtrlPoint(ctrlPointIndex, ctrlPointDelta);
+              _shapes[shapeIndex].MoveCtrlPoint(ctrlPointIndex, ctrlPointDelta, _size);
               ctrlPointModified |= true;
               _shapes[shapeIndex].m_ctrlPoints[ctrlPointIndex].deselect();
               break;
@@ -699,7 +780,7 @@ bool ImGui::DrawShapes(const char* _label, const ImVec2& _origin, std::vector<Im
               angle = _shapes[shapeIndex].getAngle();
               ctrlPointDelta = ImVec2(-ImCos(angle),-ImSin(angle));
               _shapes[shapeIndex].m_ctrlPoints[ctrlPointIndex].select();
-              _shapes[shapeIndex].MoveCtrlPoint(ctrlPointIndex, ctrlPointDelta);
+              _shapes[shapeIndex].MoveCtrlPoint(ctrlPointIndex, ctrlPointDelta, _size);
               ctrlPointModified |= true;
               _shapes[shapeIndex].m_ctrlPoints[ctrlPointIndex].deselect();
               break;
@@ -707,7 +788,7 @@ bool ImGui::DrawShapes(const char* _label, const ImVec2& _origin, std::vector<Im
               angle = _shapes[shapeIndex].getAngle();
               ctrlPointDelta = ImVec2(-ImCos(angle),-ImSin(angle));
               _shapes[shapeIndex].m_ctrlPoints[ctrlPointIndex].select();
-              _shapes[shapeIndex].MoveCtrlPoint(ctrlPointIndex, ctrlPointDelta);
+              _shapes[shapeIndex].MoveCtrlPoint(ctrlPointIndex, ctrlPointDelta, _size);
               ctrlPointModified |= true;
               _shapes[shapeIndex].m_ctrlPoints[ctrlPointIndex].deselect();
               break;
@@ -715,7 +796,7 @@ bool ImGui::DrawShapes(const char* _label, const ImVec2& _origin, std::vector<Im
               angle = _shapes[shapeIndex].getAngle();
               ctrlPointDelta = ImVec2(-ImCos(angle),-ImSin(angle));
               _shapes[shapeIndex].m_ctrlPoints[ctrlPointIndex].select();
-              _shapes[shapeIndex].MoveCtrlPoint(ctrlPointIndex, ctrlPointDelta);
+              _shapes[shapeIndex].MoveCtrlPoint(ctrlPointIndex, ctrlPointDelta, _size);
               ctrlPointModified |= true;
               _shapes[shapeIndex].m_ctrlPoints[ctrlPointIndex].deselect();
               break;
@@ -723,7 +804,7 @@ bool ImGui::DrawShapes(const char* _label, const ImVec2& _origin, std::vector<Im
               angle = _shapes[shapeIndex].getAngle();
               ctrlPointDelta = ImVec2(-ImCos(angle),-ImSin(angle));
               _shapes[shapeIndex].m_ctrlPoints[ctrlPointIndex].select();
-              _shapes[shapeIndex].MoveCtrlPoint(ctrlPointIndex, ctrlPointDelta);
+              _shapes[shapeIndex].MoveCtrlPoint(ctrlPointIndex, ctrlPointDelta, _size);
               ctrlPointModified |= true;
               _shapes[shapeIndex].m_ctrlPoints[ctrlPointIndex].deselect();
               break;
@@ -777,7 +858,7 @@ bool ImGui::DrawShapes(const char* _label, const ImVec2& _origin, std::vector<Im
       if (_shapes[shapeIndex].getHovered()) {
         centerDelta = ImVec2(1,0)/_scale;
         _shapes[shapeIndex].select();
-        _shapes[shapeIndex].MoveCenter(centerDelta);
+        _shapes[shapeIndex].MoveCenter(centerDelta, _size);
         centerModified |= true;
         _shapes[shapeIndex].deselect();
       }
@@ -788,7 +869,7 @@ bool ImGui::DrawShapes(const char* _label, const ImVec2& _origin, std::vector<Im
       if (_shapes[shapeIndex].getHovered()) {
         centerDelta = ImVec2(0,-1)/_scale;
         _shapes[shapeIndex].select();
-        _shapes[shapeIndex].MoveCenter(centerDelta);
+        _shapes[shapeIndex].MoveCenter(centerDelta, _size);
         centerModified |= true;
         _shapes[shapeIndex].deselect();
       }
@@ -799,7 +880,7 @@ bool ImGui::DrawShapes(const char* _label, const ImVec2& _origin, std::vector<Im
       if (_shapes[shapeIndex].getHovered()) {
         centerDelta = ImVec2(-1,0)/_scale;
         _shapes[shapeIndex].select();
-        _shapes[shapeIndex].MoveCenter(centerDelta);
+        _shapes[shapeIndex].MoveCenter(centerDelta, _size);
         centerModified |= true;
         _shapes[shapeIndex].deselect();
       }
@@ -810,7 +891,7 @@ bool ImGui::DrawShapes(const char* _label, const ImVec2& _origin, std::vector<Im
       if (_shapes[shapeIndex].getHovered()) {
         centerDelta = ImVec2(0,1)/_scale;
         _shapes[shapeIndex].select();
-        _shapes[shapeIndex].MoveCenter(centerDelta);
+        _shapes[shapeIndex].MoveCenter(centerDelta, _size);
         centerModified |= true;
         _shapes[shapeIndex].deselect();
       }
