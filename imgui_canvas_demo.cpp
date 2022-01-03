@@ -1,4 +1,4 @@
-#include <GL/gl3w.h>
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <vector>
 #include <iostream>
@@ -71,9 +71,8 @@ int main (int argc, char** argv) {
   glfwMakeContextCurrent(window);
   glfwSwapInterval(1); // Enable vsync
 
-  bool err = gl3wInit() != 0;
-  if (err) {
-    fprintf(stderr, "Failed to initialize OpenGL loader!\n");
+  if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+    fprintf(stderr, "Failed to initialize GLAD\n");
     return 1;
   }
 
@@ -90,7 +89,7 @@ int main (int argc, char** argv) {
   ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
   // ==================================================================================================================
-  Shader shader(FileManager::Read(BASE_VERTEX_SHADER_FILE_STR), FileManager::Read(MASK_FRAGMENT_SHADER_FILE_STR));
+  Shader shader(Shader::ReadFile(BASE_VERTEX_SHADER_FILE_STR), Shader::ReadFile(MASK_FRAGMENT_SHADER_FILE_STR));
   shader.Initialize();
   shader.BindFragDataLocation();
   shader.Use();
