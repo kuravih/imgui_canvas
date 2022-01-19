@@ -570,6 +570,10 @@ bool ImGui::DrawShapes(const char* _label, const ImVec2& _origin, std::vector<Im
   ImGuiWindow* window = GetCurrentWindow();
 
   for (uint shapeIndex = 0; shapeIndex < _shapes.size(); shapeIndex++) {
+
+    if (!_shapes[shapeIndex].getVisible())
+      continue;
+
     centerModified |= false;
     _shapes[shapeIndex].deselect();
     _shapes[shapeIndex].m_center.deselect();
@@ -1177,8 +1181,11 @@ void ImGui::UpdateMask(uint8_t* _mask, const ImVec2& _canvasSize, std::vector<Im
   for (int x = 0; x < _canvasSize.x; x++) {
     for (int y = 0; y < _canvasSize.y; y++) {
       _mask[x+(int)(_canvasSize.x*y)] = 0;
-      for (ImGuiShape &shape:_shapes)
+      for (ImGuiShape &shape:_shapes) {
+        if (!shape.getVisible())
+          continue;
         _mask[x+(int)(_canvasSize.x*y)] |= (int)shape.isInside(ImVec2(x,y));
+      }
     }
   }
 }

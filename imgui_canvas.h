@@ -50,6 +50,8 @@ const std::string shapeTypeToString(const ImGuiCanvasShapeType _shapeType);
 const bool stringToShapeType(const std::string _shapeTypeString, ImGuiCanvasShapeType& _shapeType);
 
 class ImGuiShape {
+private:
+  bool visible = true;
 public:
   struct CtrlPoint {
     ImVec2 position;
@@ -135,6 +137,13 @@ public:
   }
   void hover() {
     setHovered(true);
+  }
+  // ------------------------------------------------------------------------------------------------------------------
+  void setVisible(const bool _visible = true) {
+    visible = _visible;
+  }
+  bool getVisible() const {
+    return visible;
   }
   // ------------------------------------------------------------------------------------------------------------------
   CtrlPoint getCenter() const {
