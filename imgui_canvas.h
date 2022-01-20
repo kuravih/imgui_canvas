@@ -272,7 +272,7 @@ namespace ImGui
 
   IMGUI_API int DrawCanvas(const char* _label, const ImVec2& _viewSize, const ImVec2& _canvasSize, std::vector<ImGuiCanvasShape>& _shapes, const ImColor& _borderColor=WHITE, const ImColor& _bgColor=ImColor(50,50,50,255), ImU32 _flags=0);
   IMGUI_API int DrawCanvas(const char* _label, const ImVec2& _viewSize, const ImVec2& _canvasSize, std::vector<ImGuiCanvasShape>& _shapes, ImTextureID _textureId, const ImColor& _borderColor=WHITE, const ImColor& _bgColor=ImColor(50,50,50,255), ImU32 _flags=0);
-  IMGUI_API int DrawCanvas(const char* _label, const ImVec2& _viewSize, const ImVec2& _canvasSize, std::vector<ImGuiCanvasShape>& _shapes, ImTextureID _textureId, uint8_t* mask, const ImColor& _borderColor=WHITE, const ImColor& _bgColor=ImColor(50,50,50,255), ImU32 _flags=0);
+  IMGUI_API int DrawCanvas(const char* _label, const ImVec2& _viewSize, const ImVec2& _canvasSize, std::vector<ImGuiCanvasShape>& _shapes, ImTextureID _textureId, uint8_t* mask, bool _updateMask=false, const ImColor& _borderColor=WHITE, const ImColor& _bgColor=ImColor(50,50,50,255), ImU32 _flags=0);
   IMGUI_API int DrawCanvas(const char* _label, const ImVec2& _viewSize, const ImVec2& _canvasSize, ImTextureID _textureId, const ImColor& _borderColor=WHITE, const ImColor& _bgColor=ImColor(50,50,50,255), ImU32 _flags=0);
 
   IMGUI_API void AddCircle(ImDrawList* _ptrDrawList, const ImVec2& _center, float _radius, const ImColor& _color=WHITE, int _numSegments=32, float _thickness=1.0f);

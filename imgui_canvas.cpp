@@ -1054,7 +1054,7 @@ int ImGui::DrawCanvas(const char* _label, const ImVec2& _viewSize, const ImVec2&
 
 
 // --------------------------------------------------------------------------------------------------------------------
-int ImGui::DrawCanvas(const char* _label, const ImVec2& _viewSize, const ImVec2& _canvasSize, std::vector<ImGuiCanvasShape>& _shapes, ImTextureID _textureId, uint8_t* _mask, const ImColor& _borderColor, const ImColor& _bgColor, ImU32 _flags) {
+int ImGui::DrawCanvas(const char* _label, const ImVec2& _viewSize, const ImVec2& _canvasSize, std::vector<ImGuiCanvasShape>& _shapes, ImTextureID _textureId, uint8_t* _mask, bool _updateMask, const ImColor& _borderColor, const ImColor& _bgColor, ImU32 _flags) {
   // draw background image
   // draw shapes
   // draw updating mask
@@ -1087,6 +1087,8 @@ int ImGui::DrawCanvas(const char* _label, const ImVec2& _viewSize, const ImVec2&
   window->DrawList->PushClipRect(canvas.Min, canvas.Max); // ----------------------------------------------------------
 
   modified |= DrawShapes(_label, canvas.Min, _shapes, scale, _canvasSize);
+
+  modified |= _updateMask;
 
   if (modified)
     UpdateMask(_mask, _canvasSize, _shapes);
