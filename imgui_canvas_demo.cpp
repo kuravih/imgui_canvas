@@ -104,7 +104,7 @@ int main (int argc, char** argv) {
       imageData[x + y*width] = (uint16_t)ImPow(2.0,16)*(float)x/(float)width;
 
   uint8_t* maskData = new uint8_t[width*height]();
-  bool maskEnable=true, maskUpdate=false;
+  bool maskEnable=true, updateMask=false;
 
   ImVec2 viewSize = ImVec2(640,480);
   // ------------------------------------------------------------------------------------------------------------------
@@ -152,7 +152,7 @@ int main (int argc, char** argv) {
       ImGui::Text("Mask                ");
       ImGui::SameLine();
       if (ImGui::Checkbox("##mask_enable_Checkbox", &maskEnable)) {
-        maskUpdate = true;
+        updateMask = true;
         for (ImGuiCanvasShape& shape: shapes)
           shape.setVisible();
       }
@@ -201,7 +201,7 @@ int main (int argc, char** argv) {
 
       shader.UpdateRenderBuffer(&renderBuffers, width, height, &frameBuffers, &compositeTexture);
 
-      ImGui::DrawCanvas("canvas", viewSize, ImVec2(width,height), shapes, (ImTextureID)(intptr_t)compositeTexture, maskData, maskUpdate);
+      ImGui::DrawCanvas("canvas", viewSize, ImVec2(width,height), shapes, (ImTextureID)(intptr_t)compositeTexture, maskData, updateMask);
 
       ImGui::Separator(); // ==========================================================================================
 
