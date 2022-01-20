@@ -108,7 +108,7 @@ int main (int argc, char** argv) {
 
   ImVec2 viewSize = ImVec2(640,480);
   // ------------------------------------------------------------------------------------------------------------------
-  static std::vector<ImGuiShape> shapes;
+  static std::vector<ImGuiCanvasShape> shapes;
 
   static GLuint imageTexture, maskTexture, compositeTexture, renderBuffers, frameBuffers;
 
@@ -125,10 +125,10 @@ int main (int argc, char** argv) {
 
   // ---- add 2 x hlines and 2 x vlines for roi selection -------------------------------------------------------------
   shapes.clear();
-  shapes.push_back(ImGuiShape("vLine##A_V_ImGuiShape", ImVec2(10.0, height/2.0), ImGuiCanvasShapeType::VLine, {0.0f, (float)height}, ImGuiCanvasClip::Out, true));
-  shapes.push_back(ImGuiShape("vLine##B_V_ImGuiShape", ImVec2(width-10.0, height/2.0), ImGuiCanvasShapeType::VLine, {0.0f, (float)height}, ImGuiCanvasClip::In, true));
-  shapes.push_back(ImGuiShape("hLine##A_H_ImGuiShape", ImVec2(width/2.0, 10.0), ImGuiCanvasShapeType::HLine, {0.0f, (float)width}, ImGuiCanvasClip::Out, true));
-  shapes.push_back(ImGuiShape("hLine##B_H_ImGuiShape", ImVec2(width/2.0, height-10.0), ImGuiCanvasShapeType::HLine, {0.0f, (float)width}, ImGuiCanvasClip::In, true));
+  shapes.push_back(ImGuiCanvasShape("vLine##A_V_ImGuiShape", ImVec2(10.0, height/2.0), ImGuiCanvasShapeType::VLine, {0.0f, (float)height}, ImGuiCanvasClip::Out, true));
+  shapes.push_back(ImGuiCanvasShape("vLine##B_V_ImGuiShape", ImVec2(width-10.0, height/2.0), ImGuiCanvasShapeType::VLine, {0.0f, (float)height}, ImGuiCanvasClip::In, true));
+  shapes.push_back(ImGuiCanvasShape("hLine##A_H_ImGuiShape", ImVec2(width/2.0, 10.0), ImGuiCanvasShapeType::HLine, {0.0f, (float)width}, ImGuiCanvasClip::Out, true));
+  shapes.push_back(ImGuiCanvasShape("hLine##B_H_ImGuiShape", ImVec2(width/2.0, height-10.0), ImGuiCanvasShapeType::HLine, {0.0f, (float)width}, ImGuiCanvasClip::In, true));
   // ==================================================================================================================
 
   // Main loop
@@ -152,33 +152,34 @@ int main (int argc, char** argv) {
       ImGui::Text("Mask                ");
       ImGui::SameLine();
       if (ImGui::Checkbox("##mask_enable_Checkbox", &maskEnable)) {
-        for (ImGuiShape& shape: shapes)
+        for (ImGuiCanvasShape& shape: shapes)
           shape.setVisible();
       }
 
       ImGui::SameLine();
 
       if (!maskEnable) {
-        for (std::vector<ImGuiShape>::iterator shapeIter = shapes.begin()+4; shapeIter != shapes.end(); ++shapeIter)
+        for (std::vector<ImGuiCanvasShape>::iterator shapeIter = shapes.begin()+4; shapeIter != shapes.end(); ++shapeIter) {
           shapeIter->setVisible(false);
+        }
         ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
         ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
       }
 
       if (ImGui::Button("Square##square_Button"))
-        shapes.push_back(ImGuiShape("square##square_ImGuiShape", {(float)rangedRand(shapes[0].m_center.position.x,shapes[1].m_center.position.x), (float)rangedRand(shapes[2].m_center.position.y,shapes[3].m_center.position.y)}, ImGuiCanvasShapeType::Square, {(float)(width/8.0)}, ImGuiCanvasClip::Out, true));
+        shapes.push_back(ImGuiCanvasShape("square##square_ImGuiShape", {(float)rangedRand(shapes[0].m_center.position.x,shapes[1].m_center.position.x), (float)rangedRand(shapes[2].m_center.position.y,shapes[3].m_center.position.y)}, ImGuiCanvasShapeType::Square, {(float)(width/8.0)}, ImGuiCanvasClip::Out, true));
 
       ImGui::SameLine();
       if (ImGui::Button("Rectangle##rectangle_Button"))
-        shapes.push_back(ImGuiShape("rectangle##rectangle_ImGuiShape", {(float)rangedRand(shapes[0].m_center.position.x,shapes[1].m_center.position.x), (float)rangedRand(shapes[2].m_center.position.y,shapes[3].m_center.position.y)}, ImGuiCanvasShapeType::Rectangle, {(float)(width/8.0), (float)(height/8.0)}, ImGuiCanvasClip::Out, true));
+        shapes.push_back(ImGuiCanvasShape("rectangle##rectangle_ImGuiShape", {(float)rangedRand(shapes[0].m_center.position.x,shapes[1].m_center.position.x), (float)rangedRand(shapes[2].m_center.position.y,shapes[3].m_center.position.y)}, ImGuiCanvasShapeType::Rectangle, {(float)(width/8.0), (float)(height/8.0)}, ImGuiCanvasClip::Out, true));
 
       ImGui::SameLine();
       if (ImGui::Button("Circle##circle_Button"))
-        shapes.push_back(ImGuiShape("circle##circle_ImGuiShape", {(float)rangedRand(shapes[0].m_center.position.x,shapes[1].m_center.position.x), (float)rangedRand(shapes[2].m_center.position.y,shapes[3].m_center.position.y)}, ImGuiCanvasShapeType::Circle, {(float)(width/8.0)}, ImGuiCanvasClip::Out, true));
+        shapes.push_back(ImGuiCanvasShape("circle##circle_ImGuiShape", {(float)rangedRand(shapes[0].m_center.position.x,shapes[1].m_center.position.x), (float)rangedRand(shapes[2].m_center.position.y,shapes[3].m_center.position.y)}, ImGuiCanvasShapeType::Circle, {(float)(width/8.0)}, ImGuiCanvasClip::Out, true));
 
       ImGui::SameLine();
       if (ImGui::Button("Ellipse##ellipse_Button"))
-        shapes.push_back(ImGuiShape("ellipse##ellipse_ImGuiShape", {(float)rangedRand(shapes[0].m_center.position.x,shapes[1].m_center.position.x), (float)rangedRand(shapes[2].m_center.position.y,shapes[3].m_center.position.y)}, ImGuiCanvasShapeType::Ellipse, {(float)(width/8.0), (float)(height/8.0)}, ImGuiCanvasClip::Out, true));
+        shapes.push_back(ImGuiCanvasShape("ellipse##ellipse_ImGuiShape", {(float)rangedRand(shapes[0].m_center.position.x,shapes[1].m_center.position.x), (float)rangedRand(shapes[2].m_center.position.y,shapes[3].m_center.position.y)}, ImGuiCanvasShapeType::Ellipse, {(float)(width/8.0), (float)(height/8.0)}, ImGuiCanvasClip::Out, true));
 
       if (!maskEnable) {
         ImGui::PopItemFlag();
