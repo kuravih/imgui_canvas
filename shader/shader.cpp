@@ -163,8 +163,8 @@ void Shader::SetupTexture(const GLenum _texture, GLuint* _ptrTextures, GLsizei _
   glActiveTexture(_texture); 
   glGenTextures(_n, _ptrTextures); 
   glBindTexture(_target, *_ptrTextures); 
-  glTexParameteri(_target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(_target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(_target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(_target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexImage2D(_target, 0, _internalFormat, _width, _height, _level, _internalFormat, _type, _ptrData);
 }
 // ====================================================================================================================
@@ -177,8 +177,8 @@ void Shader::SetupTexture(const GLenum _texture, GLuint* _ptrTextures, GLsizei _
 void Shader::UpdateTexture(const GLenum _texture, GLuint* _ptrTextures, GLsizei _width, GLsizei _height, const void* _ptrData, const GLint _internalFormat, const GLsizei _n, const GLenum _target, const GLint _level, const GLint _border, const GLenum _type) {
   glActiveTexture(_texture); 
   glBindTexture(_target, *_ptrTextures); 
-  glTexParameteri(_target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(_target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(_target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(_target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexImage2D(_target, 0, _internalFormat, _width, _height, _level, _internalFormat, _type, _ptrData);
 }
 // ====================================================================================================================
