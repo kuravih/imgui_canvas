@@ -105,8 +105,8 @@ int main (int argc, char** argv) {
 
   uint8_t* maskData = new uint8_t[width*height]();
   bool maskEnable=true, updateMask=false;
-
-  ImVec2 viewSize = ImVec2(640,480);
+  static float zoomMultiplier=1.0, zoomMinMultiplier=1.0, zoomMaxMultiplier=8.0;
+  ImVec2 viewWindowSize, viewSize = ImVec2(640,480);
   // ------------------------------------------------------------------------------------------------------------------
   static std::vector<ImGuiCanvasShape> shapes;
 
@@ -144,8 +144,14 @@ int main (int argc, char** argv) {
     // ================================================================================================================
     if (ImGui::Begin("imgui_canvas demo")) {
       ImGui::Separator(); // ==========================================================================================
-      viewSize.x = ImGui::GetContentRegionAvailWidth();
-      viewSize.y = (int)(viewSize.x*imageAspectRatio);
+
+      // ---- zoom slider ---------------------------------------------------------------------------------------------
+      ImGui::AlignTextToFramePadding();
+      ImGui::Text("Zoom                ");
+      ImGui::SameLine();
+      ImGui::SetNextItemWidth(200);
+      ImGui::SliderScalar("##zoom_SliderScalar", ImGuiDataType_Float, &zoomMultiplier, &zoomMinMultiplier, &zoomMaxMultiplier, "%.2f X");
+      // ---- zoom slider ---------------------------------------------------------------------------------------------
 
       // ---- mask ----------------------------------------------------------------------------------------------------
       ImGui::AlignTextToFramePadding();
@@ -188,8 +194,6 @@ int main (int argc, char** argv) {
       }
       // ---- mask ----------------------------------------------------------------------------------------------------
 
-      ImGui::Separator(); // ==========================================================================================
-
       shader.UpdateTexture(GL_TEXTURE0, &imageTexture, width, height, imageData, GL_RED, 1, GL_TEXTURE_2D, 0, 0, GL_UNSIGNED_SHORT);
       shader.setUniform("image", 0);
 
@@ -201,9 +205,23 @@ int main (int argc, char** argv) {
 
       shader.UpdateRenderBuffer(&renderBuffers, width, height, &frameBuffers, &compositeTexture);
 
-      ImGui::DrawCanvas("canvas", viewSize, ImVec2(width,height), shapes, (ImTextureID)(intptr_t)compositeTexture, maskData, updateMask);
+      {
+        viewWindowSize.x = ImGui::GetContentRegionAvailWidth();
+        viewSize.x = viewWindowSize.x - 14;
+        viewSize.y = (int)(viewSize.x*imageAspectRatio);
+        viewWindowSize.y = viewSize.y + 14;
 
-      ImGui::Separator(); // ==========================================================================================
+        viewSize.x = zoomMultiplier*viewSize.x;
+        viewSize.y = zoomMultiplier*viewSize.y;
+
+        ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 5.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(6,6));
+        ImGui::BeginChild("canvas_child_window", viewWindowSize, true, ImGuiWindowFlags_None | ImGuiWindowFlags_HorizontalScrollbar);
+        ImGui::DrawCanvas("canvas", viewSize, ImVec2(width,height), shapes, (ImTextureID)(intptr_t)compositeTexture, maskData, updateMask);
+        ImGui::EndChild();
+        ImGui::PopStyleVar();
+        ImGui::PopStyleVar();
+      }
 
     }
     ImGui::End();

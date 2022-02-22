@@ -638,6 +638,10 @@ bool ImGui::DrawShapes(const char* _label, const ImVec2& _origin, std::vector<Im
         // ------------------------------------------------------------------------------------------------------------
       }
 
+      if (_shapes[shapeIndex].getHovered()) {
+        ImGui::SetTooltip("[%.1f,%.1f]",_shapes[shapeIndex].getCenter().position.x, _shapes[shapeIndex].getCenter().position.y);
+      }
+
       if ((!_shapes[shapeIndex].getHovered())&&IsKeyPressed(GetKeyIndex(ImGuiKey_RightArrow))) {
         // right arrow key increases the angle of the hovered control point
         if (_shapes[shapeIndex].m_ctrlPoints[ctrlPointIndex].getHovered()) {
@@ -954,7 +958,7 @@ int ImGui::DrawCanvas(const char* _label, const ImVec2& _viewSize, const ImVec2&
   
   window->DrawList->AddRect(canvas.Min, canvas.Max, ImU32(_borderColor));
 
-  window->DrawList->PushClipRect(canvas.Min, canvas.Max); // ----------------------------------------------------------
+  // window->DrawList->PushClipRect(canvas.Min, canvas.Max); // ----------------------------------------------------------
 
   modified |= DrawShapes(_label, canvas.Min, _shapes, scale, _canvasSize);
 
@@ -971,7 +975,7 @@ int ImGui::DrawCanvas(const char* _label, const ImVec2& _viewSize, const ImVec2&
   for (float y = 0; y < _viewSize.y; y += GRID_STEP)
     window->DrawList->AddLine(ImVec2(canvas.Min.x, canvas.Min.y + y), ImVec2(canvas.Max.x, canvas.Min.y + y), GRAY);
 
-  window->DrawList->PopClipRect(); // ---------------------------------------------------------------------------------
+  // window->DrawList->PopClipRect(); // ---------------------------------------------------------------------------------
 
   window->DC.CursorPos = canvas.Max + style.FramePadding;
 
@@ -1019,7 +1023,7 @@ int ImGui::DrawCanvas(const char* _label, const ImVec2& _viewSize, const ImVec2&
 
   window->DrawList->AddRect(canvas.Min, canvas.Max, ImU32(_borderColor));
 
-  window->DrawList->PushClipRect(canvas.Min, canvas.Max); // ----------------------------------------------------------
+  // window->DrawList->PushClipRect(canvas.Min, canvas.Max); // ----------------------------------------------------------
 
   modified |= DrawShapes(_label, canvas.Min, _shapes, scale, _canvasSize);
 
@@ -1036,7 +1040,7 @@ int ImGui::DrawCanvas(const char* _label, const ImVec2& _viewSize, const ImVec2&
   for (float y = 0; y < _viewSize.y; y += GRID_STEP)
     window->DrawList->AddLine(ImVec2(canvas.Min.x, canvas.Min.y + y), ImVec2(canvas.Max.x, canvas.Min.y + y), GRAY);
 
-  window->DrawList->PopClipRect(); // ---------------------------------------------------------------------------------
+  // window->DrawList->PopClipRect(); // ---------------------------------------------------------------------------------
 
   window->DC.CursorPos = canvas.Max + style.FramePadding;
 
@@ -1084,7 +1088,7 @@ int ImGui::DrawCanvas(const char* _label, const ImVec2& _viewSize, const ImVec2&
 
   window->DrawList->AddRect(canvas.Min, canvas.Max, ImU32(_borderColor));
 
-  window->DrawList->PushClipRect(canvas.Min, canvas.Max); // ----------------------------------------------------------
+  // window->DrawList->PushClipRect(canvas.Min, canvas.Max); // ----------------------------------------------------------
 
   modified |= DrawShapes(_label, canvas.Min, _shapes, scale, _canvasSize);
 
@@ -1108,7 +1112,7 @@ int ImGui::DrawCanvas(const char* _label, const ImVec2& _viewSize, const ImVec2&
   for (float y = 0; y < _viewSize.y; y += GRID_STEP)
     window->DrawList->AddLine(ImVec2(canvas.Min.x, canvas.Min.y + y), ImVec2(canvas.Max.x, canvas.Min.y + y), GRAY);
 
-  window->DrawList->PopClipRect(); // ---------------------------------------------------------------------------------
+  // window->DrawList->PopClipRect(); // ---------------------------------------------------------------------------------
 
   window->DC.CursorPos = canvas.Max + style.FramePadding;
 
@@ -1151,7 +1155,7 @@ int ImGui::DrawCanvas(const char* _label, const ImVec2& _viewSize, const ImVec2&
 
   window->DrawList->AddRect(canvas.Min, canvas.Max, ImU32(_borderColor));
 
-  window->DrawList->PushClipRect(canvas.Min, canvas.Max); // ----------------------------------------------------------
+  // window->DrawList->PushClipRect(canvas.Min, canvas.Max); // ----------------------------------------------------------
 
   modified = false;
 
@@ -1161,7 +1165,7 @@ int ImGui::DrawCanvas(const char* _label, const ImVec2& _viewSize, const ImVec2&
   for (float y = 0; y < _viewSize.y; y += GRID_STEP)
     window->DrawList->AddLine(ImVec2(canvas.Min.x, canvas.Min.y + y), ImVec2(canvas.Max.x, canvas.Min.y + y), GRAY);
 
-  window->DrawList->PopClipRect(); // ---------------------------------------------------------------------------------
+  // window->DrawList->PopClipRect(); // ---------------------------------------------------------------------------------
 
   window->DC.CursorPos = canvas.Max + style.FramePadding;
 
