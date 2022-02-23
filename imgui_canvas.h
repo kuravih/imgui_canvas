@@ -267,7 +267,7 @@ namespace ImGui
   float length(const ImVec2& a, const ImVec2& b);
   float angle(const ImVec2& a);
   float angle(const ImVec2& a, const ImVec2& b);
-  bool DrawShapes(const char* _label, const ImVec2& _origin, std::vector<ImGuiCanvasShape>& _shapes, const float _scale=1.0, const ImVec2& _size=ImVec2(0,0));
+  bool DrawShapes(const char* _label, const ImVec2& _origin, const ImVec2& _canvasSize, std::vector<ImGuiCanvasShape>& _shapes, const float _scale=1.0, const ImVec2& _size=ImVec2(0,0));
   void UpdateMask(uint8_t* _mask, const ImVec2& _canvasSize, std::vector<ImGuiCanvasShape>& _shapes);
 
   IMGUI_API int DrawCanvas(const char* _label, const ImVec2& _viewSize, const ImVec2& _canvasSize, std::vector<ImGuiCanvasShape>& _shapes, const ImColor& _borderColor=WHITE, const ImColor& _bgColor=ImColor(50,50,50,255), ImU32 _flags=0);

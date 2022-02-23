@@ -554,7 +554,7 @@ float ImGui::angle(const ImVec2& a) {
 
 
 // --------------------------------------------------------------------------------------------------------------------
-bool ImGui::DrawShapes(const char* _label, const ImVec2& _origin, std::vector<ImGuiCanvasShape>& _shapes, const float _scale, const ImVec2& _size) {
+bool ImGui::DrawShapes(const char* _label, const ImVec2& _origin, const ImVec2& _canvasSize, std::vector<ImGuiCanvasShape>& _shapes, const float _scale, const ImVec2& _size) {
   static bool centerModified = false, ctrlPointModified = false;
   ImVec2 centerDelta, ctrlPointDelta;
 
@@ -563,6 +563,10 @@ bool ImGui::DrawShapes(const char* _label, const ImVec2& _origin, std::vector<Im
   static ImGuiCanvasShape::CtrlPoint ctrlPoint;
   static ImVec2 transformedCenter, transformedCtrlPoint;
   static float angle;
+  static float xrate=0.5, xmin=0, xmax=_canvasSize.x;
+  static float yrate=0.5, ymin=0, ymax=_canvasSize.y;
+  static char centerXLabel[128], centerYLabel[128];
+  static ImVec2 previous, next;
 
   auto vector_transform = [&](const ImVec2& _point) -> ImVec2 {return _origin+_point*_scale;};
   auto scalar_transform = [&](const float& _value) -> float {return _value*_scale;};
@@ -583,6 +587,8 @@ bool ImGui::DrawShapes(const char* _label, const ImVec2& _origin, std::vector<Im
     if (_shapes[shapeIndex].getDrawCtrls()) {
       // ---- draw hot area for center control point ------------------------------------------------------------------
       sprintf(centerLabel, "shape#%s#%s#%04d#center", _label, _shapes[shapeIndex].getLabel().c_str(), shapeIndex);
+      sprintf(centerXLabel, "##x#%s#%s#%04d#center", _label, _shapes[shapeIndex].getLabel().c_str(), shapeIndex);
+      sprintf(centerYLabel, "##y#%s#%s#%04d#center", _label, _shapes[shapeIndex].getLabel().c_str(), shapeIndex);
       SetCursorScreenPos(transformedCenter-HANDLE_2);
       InvisibleButton(centerLabel, HANDLE_4);
 
@@ -595,6 +601,30 @@ bool ImGui::DrawShapes(const char* _label, const ImVec2& _origin, std::vector<Im
           _shapes[shapeIndex].deselect();
         _shapes[shapeIndex].m_center.select();
         _shapes[shapeIndex].select();
+      }
+
+      if (BeginPopupContextItem(centerLabel, ImGuiPopupFlags_MouseButtonRight)) {
+        previous = _shapes[shapeIndex].m_center.position;
+        next = _shapes[shapeIndex].m_center.position;
+        PushItemWidth(40);
+        SameLine();
+        if (DragScalar(centerXLabel, ImGuiDataType_Float, &next.x, xrate, &xmin, &xmax, "%.0f")) {
+          centerDelta = previous - next;
+          _shapes[shapeIndex].select();
+          _shapes[shapeIndex].MoveCenter(centerDelta, _size);
+          centerModified |= true;
+          _shapes[shapeIndex].deselect();
+        };
+        SameLine();
+        if (DragScalar(centerYLabel, ImGuiDataType_Float, &next.y, yrate, &ymin, &ymax, "%.0f")) {
+          centerDelta = previous - next;
+          _shapes[shapeIndex].select();
+          _shapes[shapeIndex].MoveCenter(centerDelta, _size);
+          centerModified |= true;
+          _shapes[shapeIndex].deselect();
+        }
+        PopItemWidth();
+        EndPopup();
       }
 
       if (_shapes[shapeIndex].m_center.getSelected()&&IsMouseDragging(0)) {
@@ -639,7 +669,7 @@ bool ImGui::DrawShapes(const char* _label, const ImVec2& _origin, std::vector<Im
       }
 
       if (_shapes[shapeIndex].getHovered()) {
-        ImGui::SetTooltip("[%.1f,%.1f]",_shapes[shapeIndex].getCenter().position.x, _shapes[shapeIndex].getCenter().position.y);
+        SetTooltip("[%.1f,%.1f]",_shapes[shapeIndex].getCenter().position.x, _shapes[shapeIndex].getCenter().position.y);
       }
 
       if ((!_shapes[shapeIndex].getHovered())&&IsKeyPressed(GetKeyIndex(ImGuiKey_RightArrow))) {
@@ -960,7 +990,7 @@ int ImGui::DrawCanvas(const char* _label, const ImVec2& _viewSize, const ImVec2&
 
   // window->DrawList->PushClipRect(canvas.Min, canvas.Max); // ----------------------------------------------------------
 
-  modified |= DrawShapes(_label, canvas.Min, _shapes, scale, _canvasSize);
+  modified |= DrawShapes(_label, canvas.Min, _canvasSize, _shapes, scale, _canvasSize);
 
   SetCursorScreenPos(canvas.Min);
   InvisibleButton(_label, canvas.GetSize());
@@ -1025,7 +1055,7 @@ int ImGui::DrawCanvas(const char* _label, const ImVec2& _viewSize, const ImVec2&
 
   // window->DrawList->PushClipRect(canvas.Min, canvas.Max); // ----------------------------------------------------------
 
-  modified |= DrawShapes(_label, canvas.Min, _shapes, scale, _canvasSize);
+  modified |= DrawShapes(_label, canvas.Min, _canvasSize, _shapes, scale, _canvasSize);
 
   SetCursorScreenPos(canvas.Min);
   InvisibleButton(_label, canvas.GetSize());
@@ -1090,7 +1120,7 @@ int ImGui::DrawCanvas(const char* _label, const ImVec2& _viewSize, const ImVec2&
 
   // window->DrawList->PushClipRect(canvas.Min, canvas.Max); // ----------------------------------------------------------
 
-  modified |= DrawShapes(_label, canvas.Min, _shapes, scale, _canvasSize);
+  modified |= DrawShapes(_label, canvas.Min, _canvasSize, _shapes, scale, _canvasSize);
 
   modified |= _updateMask;
 
