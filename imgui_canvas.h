@@ -49,7 +49,7 @@ enum class ImGuiCanvasShapeType : uint8_t {
 const std::string shapeTypeToString(const ImGuiCanvasShapeType _shapeType);
 const bool stringToShapeType(const std::string _shapeTypeString, ImGuiCanvasShapeType& _shapeType);
 
-class ImGuiShape {
+class ImGuiCanvasShape {
 public:
   struct CtrlPoint {
     ImVec2 position;
@@ -99,17 +99,17 @@ public:
     CtrlPoint() = default;
   };
   // ---- constructor -------------------------------------------------------------------------------------------------
-  ImGuiShape()=default;
-  ImGuiShape(std::string _label, const ImVec2 _center, const ImGuiCanvasShapeType _type, const std::initializer_list<float> _parameters, const ImGuiCanvasClip _clip, const bool _drawCtrls=true);
-  ImGuiShape(std::string _label, const ImVec2 _center, const ImGuiCanvasShapeType _type, const ImVector<float> _parameters, const ImGuiCanvasClip _clip, const bool _drawCtrls=true);
-  ImGuiShape(std::string _label, const ImVec2 _center, const ImGuiCanvasShapeType _type, const ImVector<ImVec2> _ctrlPoints, const ImGuiCanvasClip _clip, const bool _drawCtrls=true);
-  ImGuiShape(const ImGuiShape& _source); // copy constructor
+  ImGuiCanvasShape()=default;
+  ImGuiCanvasShape(std::string _label, const ImVec2 _center, const ImGuiCanvasShapeType _type, const std::initializer_list<float> _parameters, const ImGuiCanvasClip _clip, const bool _drawCtrls=true);
+  ImGuiCanvasShape(std::string _label, const ImVec2 _center, const ImGuiCanvasShapeType _type, const ImVector<float> _parameters, const ImGuiCanvasClip _clip, const bool _drawCtrls=true);
+  ImGuiCanvasShape(std::string _label, const ImVec2 _center, const ImGuiCanvasShapeType _type, const ImVector<ImVec2> _ctrlPoints, const ImGuiCanvasClip _clip, const bool _drawCtrls=true);
+  ImGuiCanvasShape(const ImGuiCanvasShape& _source); // copy constructor
 
   // ---- destructor --------------------------------------------------------------------------------------------------
-  ~ImGuiShape();
+  ~ImGuiCanvasShape();
 
   // ---- assignment operator -----------------------------------------------------------------------------------------
-  ImGuiShape& operator=(const ImGuiShape& _other);
+  ImGuiCanvasShape& operator=(const ImGuiCanvasShape& _other);
 
   // ------------------------------------------------------------------------------------------------------------------
   void setSelected(const bool _selected) {
@@ -135,6 +135,13 @@ public:
   }
   void hover() {
     setHovered(true);
+  }
+  // ------------------------------------------------------------------------------------------------------------------
+  void setVisible(const bool _visible = true) {
+    m_visible = _visible;
+  }
+  bool getVisible() const {
+    return m_visible;
   }
   // ------------------------------------------------------------------------------------------------------------------
   CtrlPoint getCenter() const {
@@ -230,7 +237,7 @@ private:
   bool m_drawCtrls = true;
   static uint nextIndex;
   ImColor m_color = WHITE;
-  bool m_selected=false, m_hovered=false;
+  bool m_selected=false, m_hovered=false, m_visible = true;
 };
 // ====================================================================================================================
 
@@ -260,12 +267,12 @@ namespace ImGui
   float length(const ImVec2& a, const ImVec2& b);
   float angle(const ImVec2& a);
   float angle(const ImVec2& a, const ImVec2& b);
-  bool DrawShapes(const char* _label, const ImVec2& _origin, std::vector<ImGuiShape>& _shapes, const float _scale=1.0, const ImVec2& _size=ImVec2(0,0));
-  void UpdateMask(uint8_t* _mask, const ImVec2& _canvasSize, std::vector<ImGuiShape>& _shapes);
+  bool DrawShapes(const char* _label, const ImVec2& _origin, const ImVec2& _canvasSize, std::vector<ImGuiCanvasShape>& _shapes, const float _scale=1.0, const ImVec2& _size=ImVec2(0,0));
+  void UpdateMask(uint8_t* _mask, const ImVec2& _canvasSize, std::vector<ImGuiCanvasShape>& _shapes);
 
-  IMGUI_API int DrawCanvas(const char* _label, const ImVec2& _viewSize, const ImVec2& _canvasSize, std::vector<ImGuiShape>& _shapes, const ImColor& _borderColor=WHITE, const ImColor& _bgColor=ImColor(50,50,50,255), ImU32 _flags=0);
-  IMGUI_API int DrawCanvas(const char* _label, const ImVec2& _viewSize, const ImVec2& _canvasSize, std::vector<ImGuiShape>& _shapes, ImTextureID _textureId, const ImColor& _borderColor=WHITE, const ImColor& _bgColor=ImColor(50,50,50,255), ImU32 _flags=0);
-  IMGUI_API int DrawCanvas(const char* _label, const ImVec2& _viewSize, const ImVec2& _canvasSize, std::vector<ImGuiShape>& _shapes, ImTextureID _textureId, uint8_t* mask, const ImColor& _borderColor=WHITE, const ImColor& _bgColor=ImColor(50,50,50,255), ImU32 _flags=0);
+  IMGUI_API int DrawCanvas(const char* _label, const ImVec2& _viewSize, const ImVec2& _canvasSize, std::vector<ImGuiCanvasShape>& _shapes, const ImColor& _borderColor=WHITE, const ImColor& _bgColor=ImColor(50,50,50,255), ImU32 _flags=0);
+  IMGUI_API int DrawCanvas(const char* _label, const ImVec2& _viewSize, const ImVec2& _canvasSize, std::vector<ImGuiCanvasShape>& _shapes, ImTextureID _textureId, const ImColor& _borderColor=WHITE, const ImColor& _bgColor=ImColor(50,50,50,255), ImU32 _flags=0);
+  IMGUI_API int DrawCanvas(const char* _label, const ImVec2& _viewSize, const ImVec2& _canvasSize, std::vector<ImGuiCanvasShape>& _shapes, ImTextureID _textureId, uint8_t* mask, bool _updateMask=false, const ImColor& _borderColor=WHITE, const ImColor& _bgColor=ImColor(50,50,50,255), ImU32 _flags=0);
   IMGUI_API int DrawCanvas(const char* _label, const ImVec2& _viewSize, const ImVec2& _canvasSize, ImTextureID _textureId, const ImColor& _borderColor=WHITE, const ImColor& _bgColor=ImColor(50,50,50,255), ImU32 _flags=0);
 
   IMGUI_API void AddCircle(ImDrawList* _ptrDrawList, const ImVec2& _center, float _radius, const ImColor& _color=WHITE, int _numSegments=32, float _thickness=1.0f);

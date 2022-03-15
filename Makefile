@@ -20,10 +20,9 @@ CXXFLAGS = -I$(IMGUI_DIR)/backends/ -I$(IMGUI_DIR)/ -Ishader/
 CXXFLAGS += -Wall -Wformat -O3
 LIBS =
 
-# ---- OPENGL LOADER --------------------------------------------------------------------------------------------------
-## Using OpenGL loader: gl3w [default]
-SOURCES += $(IMGUI_DIR)/examples/libs/gl3w/GL/gl3w.c
-CXXFLAGS += -I$(IMGUI_DIR)/examples/libs/gl3w -DIMGUI_IMPL_OPENGL_LOADER_GL3W
+# ---- GLAD OPENGL LOADER ---------------------------------------------------------------------------------------------
+SOURCES += shader/libs/glad/src/glad.c
+CXXFLAGS += -Ishader/libs/glad/include -DIMGUI_IMPL_OPENGL_LOADER_GLAD
 
 # ---- LINUX ----------------------------------------------------------------------------------------------------------
 ifeq ($(UNAME_S), Linux) #LINUX
@@ -49,7 +48,7 @@ CXXFLAGS_STD = $(CXXFLAGS) -std=c++11
 %.o:$(IMGUI_DIR)/backends/%.cpp
 	$(CXX) $(CXXFLAGS_STD) -c -o $@ $<
 
-%.o:$(IMGUI_DIR)/examples/libs/gl3w/GL/%.c
+%.o:shader/libs/glad/src/%.c
 	$(CC) $(CFLAGS_STD) -c -o $@ $<
 
 all: $(EXE)

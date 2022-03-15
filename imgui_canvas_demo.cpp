@@ -1,4 +1,4 @@
-#include <GL/gl3w.h>
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <vector>
 #include <iostream>
@@ -71,9 +71,8 @@ int main (int argc, char** argv) {
   glfwMakeContextCurrent(window);
   glfwSwapInterval(1); // Enable vsync
 
-  bool err = gl3wInit() != 0;
-  if (err) {
-    fprintf(stderr, "Failed to initialize OpenGL loader!\n");
+  if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+    fprintf(stderr, "Failed to initialize GLAD\n");
     return 1;
   }
 
@@ -90,7 +89,7 @@ int main (int argc, char** argv) {
   ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
   // ==================================================================================================================
-  Shader shader(FileManager::Read(BASE_VERTEX_SHADER_FILE_STR), FileManager::Read(MASK_FRAGMENT_SHADER_FILE_STR));
+  Shader shader(Shader::ReadFile(BASE_VERTEX_SHADER_FILE_STR), Shader::ReadFile(MASK_FRAGMENT_SHADER_FILE_STR));
   shader.Initialize();
   shader.BindFragDataLocation();
   shader.Use();
@@ -105,11 +104,11 @@ int main (int argc, char** argv) {
       imageData[x + y*width] = (uint16_t)ImPow(2.0,16)*(float)x/(float)width;
 
   uint8_t* maskData = new uint8_t[width*height]();
-  bool maskEnable = true;
-
-  ImVec2 viewSize = ImVec2(640,480);
+  bool maskEnable=true, updateMask=false;
+  static float zoomMultiplier=1.0, zoomMinMultiplier=1.0, zoomMaxMultiplier=8.0;
+  ImVec2 viewWindowSize, viewSize = ImVec2(640,480);
   // ------------------------------------------------------------------------------------------------------------------
-  static std::vector<ImGuiShape> shapes;
+  static std::vector<ImGuiCanvasShape> shapes;
 
   static GLuint imageTexture, maskTexture, compositeTexture, renderBuffers, frameBuffers;
 
@@ -126,10 +125,10 @@ int main (int argc, char** argv) {
 
   // ---- add 2 x hlines and 2 x vlines for roi selection -------------------------------------------------------------
   shapes.clear();
-  shapes.push_back(ImGuiShape("vLine##A_V_ImGuiShape", ImVec2(10.0, height/2.0), ImGuiCanvasShapeType::VLine, {0.0f, (float)height}, ImGuiCanvasClip::Out, true));
-  shapes.push_back(ImGuiShape("vLine##B_V_ImGuiShape", ImVec2(width-10.0, height/2.0), ImGuiCanvasShapeType::VLine, {0.0f, (float)height}, ImGuiCanvasClip::In, true));
-  shapes.push_back(ImGuiShape("hLine##A_H_ImGuiShape", ImVec2(width/2.0, 10.0), ImGuiCanvasShapeType::HLine, {0.0f, (float)width}, ImGuiCanvasClip::Out, true));
-  shapes.push_back(ImGuiShape("hLine##B_H_ImGuiShape", ImVec2(width/2.0, height-10.0), ImGuiCanvasShapeType::HLine, {0.0f, (float)width}, ImGuiCanvasClip::In, true));
+  shapes.push_back(ImGuiCanvasShape("vLine##A_V_ImGuiShape", ImVec2(10.0, height/2.0), ImGuiCanvasShapeType::VLine, {0.0f, (float)height}, ImGuiCanvasClip::Out, true));
+  shapes.push_back(ImGuiCanvasShape("vLine##B_V_ImGuiShape", ImVec2(width-10.0, height/2.0), ImGuiCanvasShapeType::VLine, {0.0f, (float)height}, ImGuiCanvasClip::In, true));
+  shapes.push_back(ImGuiCanvasShape("hLine##A_H_ImGuiShape", ImVec2(width/2.0, 10.0), ImGuiCanvasShapeType::HLine, {0.0f, (float)width}, ImGuiCanvasClip::Out, true));
+  shapes.push_back(ImGuiCanvasShape("hLine##B_H_ImGuiShape", ImVec2(width/2.0, height-10.0), ImGuiCanvasShapeType::HLine, {0.0f, (float)width}, ImGuiCanvasClip::In, true));
   // ==================================================================================================================
 
   // Main loop
@@ -145,46 +144,55 @@ int main (int argc, char** argv) {
     // ================================================================================================================
     if (ImGui::Begin("imgui_canvas demo")) {
       ImGui::Separator(); // ==========================================================================================
-      viewSize.x = ImGui::GetContentRegionAvailWidth();
-      viewSize.y = (int)(viewSize.x*imageAspectRatio);
+
+      // ---- zoom slider ---------------------------------------------------------------------------------------------
+      ImGui::AlignTextToFramePadding();
+      ImGui::Text("Zoom                ");
+      ImGui::SameLine();
+      ImGui::SetNextItemWidth(200);
+      ImGui::SliderScalar("##zoom_SliderScalar", ImGuiDataType_Float, &zoomMultiplier, &zoomMinMultiplier, &zoomMaxMultiplier, "%.2f X");
+      // ---- zoom slider ---------------------------------------------------------------------------------------------
+
       // ---- mask ----------------------------------------------------------------------------------------------------
       ImGui::AlignTextToFramePadding();
       ImGui::Text("Mask                ");
       ImGui::SameLine();
-      if (ImGui::Checkbox("##mask_enable_Checkbox", &maskEnable)) {}
-      if (maskEnable) {
-        ImGui::SameLine();
-        if (ImGui::Button("Square##square_Button"))
-          shapes.push_back(ImGuiShape("square##square_ImGuiShape", {(float)rangedRand(shapes[0].m_center.position.x,shapes[1].m_center.position.x), (float)rangedRand(shapes[2].m_center.position.y,shapes[3].m_center.position.y)}, ImGuiCanvasShapeType::Square, {(float)(width/8.0)}, ImGuiCanvasClip::Out, true));
+      if (ImGui::Checkbox("##mask_enable_Checkbox", &maskEnable)) {
+        updateMask = true;
+        for (ImGuiCanvasShape& shape: shapes)
+          shape.setVisible();
+      }
 
-        ImGui::SameLine();
-        if (ImGui::Button("Rectangle##rectangle_Button"))
-          shapes.push_back(ImGuiShape("rectangle##rectangle_ImGuiShape", {(float)rangedRand(shapes[0].m_center.position.x,shapes[1].m_center.position.x), (float)rangedRand(shapes[2].m_center.position.y,shapes[3].m_center.position.y)}, ImGuiCanvasShapeType::Rectangle, {(float)(width/8.0), (float)(height/8.0)}, ImGuiCanvasClip::Out, true));
+      ImGui::SameLine();
 
-        ImGui::SameLine();
-        if (ImGui::Button("Circle##circle_Button"))
-          shapes.push_back(ImGuiShape("circle##circle_ImGuiShape", {(float)rangedRand(shapes[0].m_center.position.x,shapes[1].m_center.position.x), (float)rangedRand(shapes[2].m_center.position.y,shapes[3].m_center.position.y)}, ImGuiCanvasShapeType::Circle, {(float)(width/8.0)}, ImGuiCanvasClip::Out, true));
-
-        ImGui::SameLine();
-        if (ImGui::Button("Ellipse##ellipse_Button"))
-          shapes.push_back(ImGuiShape("ellipse##ellipse_ImGuiShape", {(float)rangedRand(shapes[0].m_center.position.x,shapes[1].m_center.position.x), (float)rangedRand(shapes[2].m_center.position.y,shapes[3].m_center.position.y)}, ImGuiCanvasShapeType::Ellipse, {(float)(width/8.0), (float)(height/8.0)}, ImGuiCanvasClip::Out, true));
-      } else {
-        ImGui::SameLine();
+      if (!maskEnable) {
+        for (std::vector<ImGuiCanvasShape>::iterator shapeIter = shapes.begin()+4; shapeIter != shapes.end(); ++shapeIter) {
+          shapeIter->setVisible(false);
+        }
         ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
         ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
-        ImGui::Button("Square##square_Button");
-        ImGui::SameLine();
-        ImGui::Button("Rectangle##rectangle_Button");
-        ImGui::SameLine();
-        ImGui::Button("Circle##circle_Button");
-        ImGui::SameLine();
-        ImGui::Button("Ellipse##ellipse_Button");
+      }
+
+      if (ImGui::Button("Square##square_Button"))
+        shapes.push_back(ImGuiCanvasShape("square##square_ImGuiShape", {(float)rangedRand(shapes[0].m_center.position.x,shapes[1].m_center.position.x), (float)rangedRand(shapes[2].m_center.position.y,shapes[3].m_center.position.y)}, ImGuiCanvasShapeType::Square, {(float)(width/8.0)}, ImGuiCanvasClip::Out, true));
+
+      ImGui::SameLine();
+      if (ImGui::Button("Rectangle##rectangle_Button"))
+        shapes.push_back(ImGuiCanvasShape("rectangle##rectangle_ImGuiShape", {(float)rangedRand(shapes[0].m_center.position.x,shapes[1].m_center.position.x), (float)rangedRand(shapes[2].m_center.position.y,shapes[3].m_center.position.y)}, ImGuiCanvasShapeType::Rectangle, {(float)(width/8.0), (float)(height/8.0)}, ImGuiCanvasClip::Out, true));
+
+      ImGui::SameLine();
+      if (ImGui::Button("Circle##circle_Button"))
+        shapes.push_back(ImGuiCanvasShape("circle##circle_ImGuiShape", {(float)rangedRand(shapes[0].m_center.position.x,shapes[1].m_center.position.x), (float)rangedRand(shapes[2].m_center.position.y,shapes[3].m_center.position.y)}, ImGuiCanvasShapeType::Circle, {(float)(width/8.0)}, ImGuiCanvasClip::Out, true));
+
+      ImGui::SameLine();
+      if (ImGui::Button("Ellipse##ellipse_Button"))
+        shapes.push_back(ImGuiCanvasShape("ellipse##ellipse_ImGuiShape", {(float)rangedRand(shapes[0].m_center.position.x,shapes[1].m_center.position.x), (float)rangedRand(shapes[2].m_center.position.y,shapes[3].m_center.position.y)}, ImGuiCanvasShapeType::Ellipse, {(float)(width/8.0), (float)(height/8.0)}, ImGuiCanvasClip::Out, true));
+
+      if (!maskEnable) {
         ImGui::PopItemFlag();
         ImGui::PopStyleVar();
       }
       // ---- mask ----------------------------------------------------------------------------------------------------
-
-      ImGui::Separator(); // ==========================================================================================
 
       shader.UpdateTexture(GL_TEXTURE0, &imageTexture, width, height, imageData, GL_RED, 1, GL_TEXTURE_2D, 0, 0, GL_UNSIGNED_SHORT);
       shader.setUniform("image", 0);
@@ -197,9 +205,23 @@ int main (int argc, char** argv) {
 
       shader.UpdateRenderBuffer(&renderBuffers, width, height, &frameBuffers, &compositeTexture);
 
-      ImGui::DrawCanvas("canvas", viewSize, ImVec2(width,height), shapes, (ImTextureID)(intptr_t)compositeTexture, maskData);
+      {
+        viewWindowSize.x = ImGui::GetContentRegionAvailWidth();
+        viewSize.x = viewWindowSize.x - 14;
+        viewSize.y = (int)(viewSize.x*imageAspectRatio);
+        viewWindowSize.y = viewSize.y + 14;
 
-      ImGui::Separator(); // ==========================================================================================
+        viewSize.x = zoomMultiplier*viewSize.x;
+        viewSize.y = zoomMultiplier*viewSize.y;
+
+        ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 5.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(6,6));
+        ImGui::BeginChild("canvas_child_window", viewWindowSize, true, ImGuiWindowFlags_None | ImGuiWindowFlags_HorizontalScrollbar);
+        ImGui::DrawCanvas("canvas", viewSize, ImVec2(width,height), shapes, (ImTextureID)(intptr_t)compositeTexture, maskData, updateMask);
+        ImGui::EndChild();
+        ImGui::PopStyleVar();
+        ImGui::PopStyleVar();
+      }
 
     }
     ImGui::End();

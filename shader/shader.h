@@ -17,6 +17,7 @@ const ImColor CLEAR = ImColor(115, 140, 153, 255);
 // ====================================================================================================================
 class Shader {
 public:
+  static std::string ReadFile(const std::string& filename);
   static const GLenum cvTypeToGLFormat(int _type);
   Shader();
   Shader(const std::string& _vertexCode, const std::string& _fragmentCode);
@@ -47,19 +48,6 @@ private:
   std::string m_vertexCode;
   std::string m_fragmentCode;
 
-};
-// ====================================================================================================================
-
-
-
-
-
-// ====================================================================================================================
-class FileManager {
-public:
-  FileManager();
-  ~FileManager();
-  static std::string Read(const std::string& filename);
 };
 // ====================================================================================================================
 

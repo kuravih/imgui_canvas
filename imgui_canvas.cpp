@@ -31,7 +31,7 @@
 
 
 // --------------------------------------------------------------------------------------------------------------------
-uint ImGuiShape::nextIndex = 0;
+uint ImGuiCanvasShape::nextIndex = 0;
 // --------------------------------------------------------------------------------------------------------------------
 
 
@@ -124,7 +124,7 @@ const bool stringToShapeType(const std::string _shapeTypeString, ImGuiCanvasShap
 
 // ====================================================================================================================
 // ---- constructor ---------------------------------------------------------------------------------------------------
-ImGuiShape::ImGuiShape(std::string _label, const ImVec2 _center, const ImGuiCanvasShapeType _type, const std::initializer_list<float> _parameters, const ImGuiCanvasClip _clip, const bool _drawCtrls) : m_label(_label), m_index(ImGuiShape::nextIndex++), m_type(_type), m_center(_center), m_clip(_clip), m_drawCtrls(_drawCtrls) {
+ImGuiCanvasShape::ImGuiCanvasShape(std::string _label, const ImVec2 _center, const ImGuiCanvasShapeType _type, const std::initializer_list<float> _parameters, const ImGuiCanvasClip _clip, const bool _drawCtrls) : m_label(_label), m_index(ImGuiCanvasShape::nextIndex++), m_type(_type), m_center(_center), m_clip(_clip), m_drawCtrls(_drawCtrls), m_visible(true) {
   switch (m_type) {
     case ImGuiCanvasShapeType::Circle:
       m_ctrlPoints.push_back(m_center.position + ImVec2(0,*(_parameters.begin())));
@@ -153,7 +153,7 @@ ImGuiShape::ImGuiShape(std::string _label, const ImVec2 _center, const ImGuiCanv
   }
   return;
 }
-ImGuiShape::ImGuiShape(std::string _label, const ImVec2 _center, const ImGuiCanvasShapeType _type, const ImVector<float> _parameters, const ImGuiCanvasClip _clip, const bool _drawCtrls) : m_label(_label), m_index(ImGuiShape::nextIndex++), m_type(_type), m_center(_center), m_clip(_clip), m_drawCtrls(_drawCtrls) {
+ImGuiCanvasShape::ImGuiCanvasShape(std::string _label, const ImVec2 _center, const ImGuiCanvasShapeType _type, const ImVector<float> _parameters, const ImGuiCanvasClip _clip, const bool _drawCtrls) : m_label(_label), m_index(ImGuiCanvasShape::nextIndex++), m_type(_type), m_center(_center), m_clip(_clip), m_drawCtrls(_drawCtrls), m_visible(true) {
   switch (m_type) {
     case ImGuiCanvasShapeType::Circle:
       m_ctrlPoints.push_back(m_center.position + ImVec2(0,_parameters[0]));
@@ -182,21 +182,21 @@ ImGuiShape::ImGuiShape(std::string _label, const ImVec2 _center, const ImGuiCanv
   }
   return;
 }
-ImGuiShape::ImGuiShape(std::string _label, const ImVec2 _center, const ImGuiCanvasShapeType _type, const ImVector<ImVec2> _ctrlPoints, const ImGuiCanvasClip _clip, const bool _drawCtrls) : m_label(_label), m_index(ImGuiShape::nextIndex++), m_type(_type), m_center(_center), m_clip(_clip), m_drawCtrls(_drawCtrls) {
+ImGuiCanvasShape::ImGuiCanvasShape(std::string _label, const ImVec2 _center, const ImGuiCanvasShapeType _type, const ImVector<ImVec2> _ctrlPoints, const ImGuiCanvasClip _clip, const bool _drawCtrls) : m_label(_label), m_index(ImGuiCanvasShape::nextIndex++), m_type(_type), m_center(_center), m_clip(_clip), m_drawCtrls(_drawCtrls), m_visible(true) {
   for(ImVec2 ctrlPoint:_ctrlPoints)
     m_ctrlPoints.push_back(ctrlPoint);
 }
-ImGuiShape::ImGuiShape(const ImGuiShape& _source) : m_label(_source.getLabel()), m_index(_source.getIndex()), m_type(_source.getType()), m_center(_source.getCenter()), m_ctrlPoints(_source.getCtrlPoints()), m_clip(_source.getClip()), m_drawCtrls(_source.getDrawCtrls()) {}
+ImGuiCanvasShape::ImGuiCanvasShape(const ImGuiCanvasShape& _source) : m_label(_source.getLabel()), m_index(_source.getIndex()), m_type(_source.getType()), m_center(_source.getCenter()), m_ctrlPoints(_source.getCtrlPoints()), m_clip(_source.getClip()), m_drawCtrls(_source.getDrawCtrls()), m_visible(_source.getVisible()) {}
 
 // ---- destructor ----------------------------------------------------------------------------------------------------
-ImGuiShape::~ImGuiShape() {}
+ImGuiCanvasShape::~ImGuiCanvasShape() {}
 
 // ---- assignment operator -------------------------------------------------------------------------------------------
-ImGuiShape& ImGuiShape::operator=(const ImGuiShape& _other) {
+ImGuiCanvasShape& ImGuiCanvasShape::operator=(const ImGuiCanvasShape& _other) {
   m_color = _other.getColor();
   m_label = _other.getLabel();
   m_type = _other.getType();
-  m_index = ImGuiShape::nextIndex;
+  m_index = ImGuiCanvasShape::nextIndex;
   m_center = _other.getCenter();
   m_ctrlPoints = _other.getCtrlPoints();
   m_clip = _other.getClip();
@@ -205,7 +205,7 @@ ImGuiShape& ImGuiShape::operator=(const ImGuiShape& _other) {
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-std::string ImGuiShape::toString() const {
+std::string ImGuiCanvasShape::toString() const {
   std::stringstream _out;
   _out << getLabel() << "_" << getIndex() << " : (" << getCenter().position.x << "," << getCenter().position.y << ")";
   if (m_ctrlPoints.size() > 0) {
@@ -220,22 +220,22 @@ std::string ImGuiShape::toString() const {
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-float ImGuiShape::getAngle(uint _index) const {
+float ImGuiCanvasShape::getAngle(uint _index) const {
   return ImGui::angle(m_center.position, m_ctrlPoints[_index].position);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-float ImGuiShape::getAbsRadius(uint _index) const {
+float ImGuiCanvasShape::getAbsRadius(uint _index) const {
   return ImGui::length(m_center.position, m_ctrlPoints[_index].position);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-ImVec2 ImGuiShape::getRadius(uint _index) const {
+ImVec2 ImGuiCanvasShape::getRadius(uint _index) const {
   return m_center.position-m_ctrlPoints[_index].position;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-void ImGuiShape::MoveCenter(const ImVec2& _delta) {
+void ImGuiCanvasShape::MoveCenter(const ImVec2& _delta) {
   if (getSelected()) {
     m_center.move(_delta);
     switch (m_type) {
@@ -274,7 +274,7 @@ void ImGuiShape::MoveCenter(const ImVec2& _delta) {
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-void ImGuiShape::MoveCenter(const ImVec2& _delta, const ImVec2& _canvasSize) {
+void ImGuiCanvasShape::MoveCenter(const ImVec2& _delta, const ImVec2& _canvasSize) {
   ImVec2 center, delta;
   if (getSelected()) {
     // ----------------------------------------------------------------------------------------------------------------
@@ -319,7 +319,7 @@ void ImGuiShape::MoveCenter(const ImVec2& _delta, const ImVec2& _canvasSize) {
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-void ImGuiShape::MoveCtrlPoint(int _ctrlPointIndex, const ImVec2& _delta) {
+void ImGuiCanvasShape::MoveCtrlPoint(int _ctrlPointIndex, const ImVec2& _delta) {
   float rectangle_radius, rectangle_angle;
   if (m_ctrlPoints[_ctrlPointIndex].selected) {
     switch (m_type) {
@@ -372,7 +372,7 @@ void ImGuiShape::MoveCtrlPoint(int _ctrlPointIndex, const ImVec2& _delta) {
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-void ImGuiShape::MoveCtrlPoint(int _ctrlPointIndex, const ImVec2& _delta, const ImVec2& _canvasSize) {
+void ImGuiCanvasShape::MoveCtrlPoint(int _ctrlPointIndex, const ImVec2& _delta, const ImVec2& _canvasSize) {
   ImVec2 point, delta;
   float rectangle_radius, rectangle_angle;
   if (m_ctrlPoints[_ctrlPointIndex].selected) {
@@ -432,7 +432,7 @@ void ImGuiShape::MoveCtrlPoint(int _ctrlPointIndex, const ImVec2& _delta, const 
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-bool ImGuiShape::isInside(const ImVec2& point) const {
+bool ImGuiCanvasShape::isInside(const ImVec2& point) const {
   float r0, a0, a;
   ImVec2 d0;
   switch (m_type) {
@@ -554,15 +554,19 @@ float ImGui::angle(const ImVec2& a) {
 
 
 // --------------------------------------------------------------------------------------------------------------------
-bool ImGui::DrawShapes(const char* _label, const ImVec2& _origin, std::vector<ImGuiShape>& _shapes, const float _scale, const ImVec2& _size) {
+bool ImGui::DrawShapes(const char* _label, const ImVec2& _origin, const ImVec2& _canvasSize, std::vector<ImGuiCanvasShape>& _shapes, const float _scale, const ImVec2& _size) {
   static bool centerModified = false, ctrlPointModified = false;
   ImVec2 centerDelta, ctrlPointDelta;
 
   static char centerLabel[128];
   static char ctrlPointLabel[128];
-  static ImGuiShape::CtrlPoint ctrlPoint;
+  static ImGuiCanvasShape::CtrlPoint ctrlPoint;
   static ImVec2 transformedCenter, transformedCtrlPoint;
   static float angle;
+  static float xrate=0.5, xmin=0, xmax=_canvasSize.x;
+  static float yrate=0.5, ymin=0, ymax=_canvasSize.y;
+  static char centerXLabel[128], centerYLabel[128];
+  static ImVec2 previous, next;
 
   auto vector_transform = [&](const ImVec2& _point) -> ImVec2 {return _origin+_point*_scale;};
   auto scalar_transform = [&](const float& _value) -> float {return _value*_scale;};
@@ -570,6 +574,10 @@ bool ImGui::DrawShapes(const char* _label, const ImVec2& _origin, std::vector<Im
   ImGuiWindow* window = GetCurrentWindow();
 
   for (uint shapeIndex = 0; shapeIndex < _shapes.size(); shapeIndex++) {
+
+    if (!_shapes[shapeIndex].getVisible())
+      continue;
+
     centerModified |= false;
     _shapes[shapeIndex].deselect();
     _shapes[shapeIndex].m_center.deselect();
@@ -579,6 +587,8 @@ bool ImGui::DrawShapes(const char* _label, const ImVec2& _origin, std::vector<Im
     if (_shapes[shapeIndex].getDrawCtrls()) {
       // ---- draw hot area for center control point ------------------------------------------------------------------
       sprintf(centerLabel, "shape#%s#%s#%04d#center", _label, _shapes[shapeIndex].getLabel().c_str(), shapeIndex);
+      sprintf(centerXLabel, "##x#%s#%s#%04d#center", _label, _shapes[shapeIndex].getLabel().c_str(), shapeIndex);
+      sprintf(centerYLabel, "##y#%s#%s#%04d#center", _label, _shapes[shapeIndex].getLabel().c_str(), shapeIndex);
       SetCursorScreenPos(transformedCenter-HANDLE_2);
       InvisibleButton(centerLabel, HANDLE_4);
 
@@ -591,6 +601,30 @@ bool ImGui::DrawShapes(const char* _label, const ImVec2& _origin, std::vector<Im
           _shapes[shapeIndex].deselect();
         _shapes[shapeIndex].m_center.select();
         _shapes[shapeIndex].select();
+      }
+
+      if (BeginPopupContextItem(centerLabel, ImGuiPopupFlags_MouseButtonRight)) {
+        previous = _shapes[shapeIndex].m_center.position;
+        next = _shapes[shapeIndex].m_center.position;
+        PushItemWidth(40);
+        SameLine();
+        if (DragScalar(centerXLabel, ImGuiDataType_Float, &next.x, xrate, &xmin, &xmax, "%.0f")) {
+          centerDelta = previous - next;
+          _shapes[shapeIndex].select();
+          _shapes[shapeIndex].MoveCenter(centerDelta, _size);
+          centerModified |= true;
+          _shapes[shapeIndex].deselect();
+        };
+        SameLine();
+        if (DragScalar(centerYLabel, ImGuiDataType_Float, &next.y, yrate, &ymin, &ymax, "%.0f")) {
+          centerDelta = previous - next;
+          _shapes[shapeIndex].select();
+          _shapes[shapeIndex].MoveCenter(centerDelta, _size);
+          centerModified |= true;
+          _shapes[shapeIndex].deselect();
+        }
+        PopItemWidth();
+        EndPopup();
       }
 
       if (_shapes[shapeIndex].m_center.getSelected()&&IsMouseDragging(0)) {
@@ -632,6 +666,10 @@ bool ImGui::DrawShapes(const char* _label, const ImVec2& _origin, std::vector<Im
         window->DrawList->PathArcTo(transformedCtrlPoint, MARK_4, IM_PI/4.0f, IM_PI*7.0f/4.0f, 3);
         window->DrawList->PathStroke(_shapes[shapeIndex].m_center.getSelected()?RED:_shapes[shapeIndex].m_ctrlPoints[ctrlPointIndex].getColor(), true);
         // ------------------------------------------------------------------------------------------------------------
+      }
+
+      if (_shapes[shapeIndex].getHovered()) {
+        SetTooltip("[%.1f,%.1f]",_shapes[shapeIndex].getCenter().position.x, _shapes[shapeIndex].getCenter().position.y);
       }
 
       if ((!_shapes[shapeIndex].getHovered())&&IsKeyPressed(GetKeyIndex(ImGuiKey_RightArrow))) {
@@ -920,7 +958,7 @@ bool ImGui::DrawShapes(const char* _label, const ImVec2& _origin, std::vector<Im
 
 
 // --------------------------------------------------------------------------------------------------------------------
-int ImGui::DrawCanvas(const char* _label, const ImVec2& _viewSize, const ImVec2& _canvasSize, std::vector<ImGuiShape>& _shapes, const ImColor& _borderColor, const ImColor& _bgColor, ImU32 _flags) {
+int ImGui::DrawCanvas(const char* _label, const ImVec2& _viewSize, const ImVec2& _canvasSize, std::vector<ImGuiCanvasShape>& _shapes, const ImColor& _borderColor, const ImColor& _bgColor, ImU32 _flags) {
   // no background image
   // draw shapes
   // no mask updating
@@ -950,9 +988,9 @@ int ImGui::DrawCanvas(const char* _label, const ImVec2& _viewSize, const ImVec2&
   
   window->DrawList->AddRect(canvas.Min, canvas.Max, ImU32(_borderColor));
 
-  window->DrawList->PushClipRect(canvas.Min, canvas.Max); // ----------------------------------------------------------
+  // window->DrawList->PushClipRect(canvas.Min, canvas.Max); // ----------------------------------------------------------
 
-  modified |= DrawShapes(_label, canvas.Min, _shapes, scale, _canvasSize);
+  modified |= DrawShapes(_label, canvas.Min, _canvasSize, _shapes, scale, _canvasSize);
 
   SetCursorScreenPos(canvas.Min);
   InvisibleButton(_label, canvas.GetSize());
@@ -967,7 +1005,7 @@ int ImGui::DrawCanvas(const char* _label, const ImVec2& _viewSize, const ImVec2&
   for (float y = 0; y < _viewSize.y; y += GRID_STEP)
     window->DrawList->AddLine(ImVec2(canvas.Min.x, canvas.Min.y + y), ImVec2(canvas.Max.x, canvas.Min.y + y), GRAY);
 
-  window->DrawList->PopClipRect(); // ---------------------------------------------------------------------------------
+  // window->DrawList->PopClipRect(); // ---------------------------------------------------------------------------------
 
   window->DC.CursorPos = canvas.Max + style.FramePadding;
 
@@ -985,7 +1023,7 @@ int ImGui::DrawCanvas(const char* _label, const ImVec2& _viewSize, const ImVec2&
 
 
 // --------------------------------------------------------------------------------------------------------------------
-int ImGui::DrawCanvas(const char* _label, const ImVec2& _viewSize, const ImVec2& _canvasSize, std::vector<ImGuiShape>& _shapes, ImTextureID _textureId, const ImColor& _borderColor, const ImColor& _bgColor, ImU32 _flags) {
+int ImGui::DrawCanvas(const char* _label, const ImVec2& _viewSize, const ImVec2& _canvasSize, std::vector<ImGuiCanvasShape>& _shapes, ImTextureID _textureId, const ImColor& _borderColor, const ImColor& _bgColor, ImU32 _flags) {
   // draw background image
   // draw shapes
   // no mask updating
@@ -1015,9 +1053,9 @@ int ImGui::DrawCanvas(const char* _label, const ImVec2& _viewSize, const ImVec2&
 
   window->DrawList->AddRect(canvas.Min, canvas.Max, ImU32(_borderColor));
 
-  window->DrawList->PushClipRect(canvas.Min, canvas.Max); // ----------------------------------------------------------
+  // window->DrawList->PushClipRect(canvas.Min, canvas.Max); // ----------------------------------------------------------
 
-  modified |= DrawShapes(_label, canvas.Min, _shapes, scale, _canvasSize);
+  modified |= DrawShapes(_label, canvas.Min, _canvasSize, _shapes, scale, _canvasSize);
 
   SetCursorScreenPos(canvas.Min);
   InvisibleButton(_label, canvas.GetSize());
@@ -1032,7 +1070,7 @@ int ImGui::DrawCanvas(const char* _label, const ImVec2& _viewSize, const ImVec2&
   for (float y = 0; y < _viewSize.y; y += GRID_STEP)
     window->DrawList->AddLine(ImVec2(canvas.Min.x, canvas.Min.y + y), ImVec2(canvas.Max.x, canvas.Min.y + y), GRAY);
 
-  window->DrawList->PopClipRect(); // ---------------------------------------------------------------------------------
+  // window->DrawList->PopClipRect(); // ---------------------------------------------------------------------------------
 
   window->DC.CursorPos = canvas.Max + style.FramePadding;
 
@@ -1050,7 +1088,7 @@ int ImGui::DrawCanvas(const char* _label, const ImVec2& _viewSize, const ImVec2&
 
 
 // --------------------------------------------------------------------------------------------------------------------
-int ImGui::DrawCanvas(const char* _label, const ImVec2& _viewSize, const ImVec2& _canvasSize, std::vector<ImGuiShape>& _shapes, ImTextureID _textureId, uint8_t* _mask, const ImColor& _borderColor, const ImColor& _bgColor, ImU32 _flags) {
+int ImGui::DrawCanvas(const char* _label, const ImVec2& _viewSize, const ImVec2& _canvasSize, std::vector<ImGuiCanvasShape>& _shapes, ImTextureID _textureId, uint8_t* _mask, bool _updateMask, const ImColor& _borderColor, const ImColor& _bgColor, ImU32 _flags) {
   // draw background image
   // draw shapes
   // draw updating mask
@@ -1080,9 +1118,11 @@ int ImGui::DrawCanvas(const char* _label, const ImVec2& _viewSize, const ImVec2&
 
   window->DrawList->AddRect(canvas.Min, canvas.Max, ImU32(_borderColor));
 
-  window->DrawList->PushClipRect(canvas.Min, canvas.Max); // ----------------------------------------------------------
+  // window->DrawList->PushClipRect(canvas.Min, canvas.Max); // ----------------------------------------------------------
 
-  modified |= DrawShapes(_label, canvas.Min, _shapes, scale, _canvasSize);
+  modified |= DrawShapes(_label, canvas.Min, _canvasSize, _shapes, scale, _canvasSize);
+
+  modified |= _updateMask;
 
   if (modified)
     UpdateMask(_mask, _canvasSize, _shapes);
@@ -1102,7 +1142,7 @@ int ImGui::DrawCanvas(const char* _label, const ImVec2& _viewSize, const ImVec2&
   for (float y = 0; y < _viewSize.y; y += GRID_STEP)
     window->DrawList->AddLine(ImVec2(canvas.Min.x, canvas.Min.y + y), ImVec2(canvas.Max.x, canvas.Min.y + y), GRAY);
 
-  window->DrawList->PopClipRect(); // ---------------------------------------------------------------------------------
+  // window->DrawList->PopClipRect(); // ---------------------------------------------------------------------------------
 
   window->DC.CursorPos = canvas.Max + style.FramePadding;
 
@@ -1145,7 +1185,7 @@ int ImGui::DrawCanvas(const char* _label, const ImVec2& _viewSize, const ImVec2&
 
   window->DrawList->AddRect(canvas.Min, canvas.Max, ImU32(_borderColor));
 
-  window->DrawList->PushClipRect(canvas.Min, canvas.Max); // ----------------------------------------------------------
+  // window->DrawList->PushClipRect(canvas.Min, canvas.Max); // ----------------------------------------------------------
 
   modified = false;
 
@@ -1155,7 +1195,7 @@ int ImGui::DrawCanvas(const char* _label, const ImVec2& _viewSize, const ImVec2&
   for (float y = 0; y < _viewSize.y; y += GRID_STEP)
     window->DrawList->AddLine(ImVec2(canvas.Min.x, canvas.Min.y + y), ImVec2(canvas.Max.x, canvas.Min.y + y), GRAY);
 
-  window->DrawList->PopClipRect(); // ---------------------------------------------------------------------------------
+  // window->DrawList->PopClipRect(); // ---------------------------------------------------------------------------------
 
   window->DC.CursorPos = canvas.Max + style.FramePadding;
 
@@ -1173,12 +1213,15 @@ int ImGui::DrawCanvas(const char* _label, const ImVec2& _viewSize, const ImVec2&
 
 
 // --------------------------------------------------------------------------------------------------------------------
-void ImGui::UpdateMask(uint8_t* _mask, const ImVec2& _canvasSize, std::vector<ImGuiShape>& _shapes) {
+void ImGui::UpdateMask(uint8_t* _mask, const ImVec2& _canvasSize, std::vector<ImGuiCanvasShape>& _shapes) {
   for (int x = 0; x < _canvasSize.x; x++) {
     for (int y = 0; y < _canvasSize.y; y++) {
       _mask[x+(int)(_canvasSize.x*y)] = 0;
-      for (ImGuiShape &shape:_shapes)
+      for (ImGuiCanvasShape &shape:_shapes) {
+        if (!shape.getVisible())
+          continue;
         _mask[x+(int)(_canvasSize.x*y)] |= (int)shape.isInside(ImVec2(x,y));
+      }
     }
   }
 }
