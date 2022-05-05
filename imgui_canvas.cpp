@@ -561,7 +561,8 @@ bool ImGui::DrawShapes(const char* _label, const ImVec2& _origin, const ImVec2& 
   static char centerLabel[128];
   static char ctrlPointLabel[128];
   static ImGuiCanvasShape::CtrlPoint ctrlPoint;
-  static ImVec2 transformedCenter, transformedCtrlPoint;
+  static ImVec2 transformedCenter, transformedCtrlPoint, transformedCenterMark[4];
+  static float transformedRadius;
   static float angle;
   static float xrate=0.5, xmin=0, xmax=_canvasSize.x;
   static float yrate=0.5, ymin=0, ymax=_canvasSize.y;
@@ -583,6 +584,7 @@ bool ImGui::DrawShapes(const char* _label, const ImVec2& _origin, const ImVec2& 
     _shapes[shapeIndex].m_center.deselect();
     
     transformedCenter = vector_transform(ImClamp(_shapes[shapeIndex].m_center.position,{0,0},_size));
+    transformedRadius = scalar_transform(_shapes[shapeIndex].getAbsRadius());
 
     if (_shapes[shapeIndex].getDrawCtrls()) {
       // ---- draw hot area for center control point ------------------------------------------------------------------
@@ -640,6 +642,10 @@ bool ImGui::DrawShapes(const char* _label, const ImVec2& _origin, const ImVec2& 
 
     // ---- control points loop ---------------------------------------------------------------------------------------
     for (int ctrlPointIndex = 0; ctrlPointIndex < _shapes[shapeIndex].getCtrlPoints().size(); ctrlPointIndex++) {
+
+      if ((_shapes[shapeIndex].getType() == ImGuiCanvasShapeType::HLine) || (_shapes[shapeIndex].getType() == ImGuiCanvasShapeType::VLine))
+        continue;
+
       ctrlPointModified |= false;
       _shapes[shapeIndex].m_ctrlPoints[ctrlPointIndex].deselect();
 
@@ -865,26 +871,26 @@ bool ImGui::DrawShapes(const char* _label, const ImVec2& _origin, const ImVec2& 
     // ---- draw shapes -----------------------------------------------------------------------------------------------
     switch (_shapes[shapeIndex].getType()) {
       case ImGuiCanvasShapeType::Circle:
-        AddCircle(window->DrawList, transformedCenter, scalar_transform(_shapes[shapeIndex].getAbsRadius()), _shapes[shapeIndex].getColor());
+        AddCircle(window->DrawList, transformedCenter, transformedRadius, _shapes[shapeIndex].getAngle(), _shapes[shapeIndex].getColor());
         break;
       case ImGuiCanvasShapeType::Ellipse:
         AddEllipse(window->DrawList, transformedCenter, _shapes[shapeIndex].getAbsRadius(1)*_scale, _shapes[shapeIndex].getAbsRadius(0)*_scale, _shapes[shapeIndex].getAngle(), _shapes[shapeIndex].getColor());
         break;
       case ImGuiCanvasShapeType::Square:
-        AddSquare(window->DrawList, transformedCenter, scalar_transform(_shapes[shapeIndex].getAbsRadius()*ImSqrt(2)), angle, _shapes[shapeIndex].getColor());
+        AddSquare(window->DrawList, transformedCenter, scalar_transform(_shapes[shapeIndex].getAbsRadius()*ImSqrt(2)), _shapes[shapeIndex].getAngle(), _shapes[shapeIndex].getColor());
         break;
       case ImGuiCanvasShapeType::Rectangle:
-        AddRectangle(window->DrawList, transformedCenter, _shapes[shapeIndex].getRadius(1)*_scale, _shapes[shapeIndex].getRadius(0)*_scale, _shapes[shapeIndex].getColor());
+        AddRectangle(window->DrawList, transformedCenter, _shapes[shapeIndex].getRadius(1)*_scale, _shapes[shapeIndex].getRadius(0)*_scale, _shapes[shapeIndex].getAngle(), _shapes[shapeIndex].getColor());
         break;
       case ImGuiCanvasShapeType::HLine:
-         _shapes[shapeIndex].m_ctrlPoints[0].position.y = _shapes[shapeIndex].m_center.position.y;
-         _shapes[shapeIndex].m_ctrlPoints[1].position.y = _shapes[shapeIndex].m_center.position.y;
-        AddHLine(window->DrawList, vector_transform(_shapes[shapeIndex].m_ctrlPoints[0].position), vector_transform(_shapes[shapeIndex].m_ctrlPoints[1].position), _shapes[shapeIndex].getColor());
+        _shapes[shapeIndex].m_ctrlPoints[0].position.y = _shapes[shapeIndex].m_center.position.y;
+        _shapes[shapeIndex].m_ctrlPoints[1].position.y = _shapes[shapeIndex].m_center.position.y;
+        AddLine(window->DrawList, vector_transform(_shapes[shapeIndex].m_ctrlPoints[0].position), vector_transform(_shapes[shapeIndex].m_ctrlPoints[1].position), _shapes[shapeIndex].getColor());
         break;
       case ImGuiCanvasShapeType::VLine:
-         _shapes[shapeIndex].m_ctrlPoints[0].position.x = _shapes[shapeIndex].m_center.position.x;
-         _shapes[shapeIndex].m_ctrlPoints[1].position.x = _shapes[shapeIndex].m_center.position.x;
-        AddHLine(window->DrawList, vector_transform(_shapes[shapeIndex].m_ctrlPoints[0].position), vector_transform(_shapes[shapeIndex].m_ctrlPoints[1].position), _shapes[shapeIndex].getColor());
+        _shapes[shapeIndex].m_ctrlPoints[0].position.x = _shapes[shapeIndex].m_center.position.x;
+        _shapes[shapeIndex].m_ctrlPoints[1].position.x = _shapes[shapeIndex].m_center.position.x;
+        AddLine(window->DrawList, vector_transform(_shapes[shapeIndex].m_ctrlPoints[0].position), vector_transform(_shapes[shapeIndex].m_ctrlPoints[1].position), _shapes[shapeIndex].getColor());
         break;
       default:
         break;
@@ -1237,8 +1243,19 @@ void ImGui::UpdateMask(uint8_t* _mask, const ImVec2& _canvasSize, std::vector<Im
 
 
 // --------------------------------------------------------------------------------------------------------------------
-void ImGui::AddCircle(ImDrawList* _ptrDrawList, const ImVec2& _center, float _radius, const ImColor& _color, int _numSegments, float _thickness) {
+void ImGui::AddCircle(ImDrawList* _ptrDrawList, const ImVec2& _center, float _radius, float _tilt, const ImColor& _color, int _numSegments, float _thickness) {
   _ptrDrawList->AddCircle(_center, _radius, _color, _numSegments, _thickness);
+
+  float IM_PI_2 = IM_PI/2;
+  ImVec2 marks[4];
+  marks[0] = _center+ImVec2(_radius*ImCos(_tilt), _radius*ImSin(_tilt));
+  _ptrDrawList->AddLine(_center, marks[0], _color, _thickness);
+  marks[1] = _center+ImVec2(_radius*ImCos(IM_PI_2+_tilt), _radius*ImSin(IM_PI_2+_tilt));
+  _ptrDrawList->AddLine(_center, marks[1], _color, _thickness);
+  marks[2] = _center+ImVec2(_radius*ImCos(IM_PI+_tilt), _radius*ImSin(IM_PI+_tilt));
+  _ptrDrawList->AddLine(_center, marks[2], _color, _thickness);
+  marks[3] = _center+ImVec2(_radius*ImCos(3*IM_PI_2+_tilt), _radius*ImSin(3*IM_PI_2+_tilt));
+  _ptrDrawList->AddLine(_center, marks[3], _color, _thickness);
 }
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -1266,6 +1283,15 @@ void ImGui::AddEllipse(ImDrawList* _ptrDrawList, const ImVec2& _center, float _r
   }
 
   _ptrDrawList->AddPolyline(points.Data, _numSegments, _color, ImDrawFlags_Closed, _thickness);
+
+  float IM_PI_2 = IM_PI/2;
+  ImVec2 marks[4];
+  for (int i = 0; i < 4; i++) {
+    theta = i*IM_PI_2;
+    r = _radiusA*_radiusB/ImSqrt(ImPow(_radiusA*ImCos(theta),2) + ImPow(_radiusB*ImSin(theta),2));
+    marks[i] = _center+ImVec2(r*ImCos(theta+_tilt), r*ImSin(theta+_tilt));
+    _ptrDrawList->AddLine(_center, marks[i], _color, _thickness);
+  }
 }
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -1279,7 +1305,7 @@ void ImGui::AddEllipse(ImDrawList* _ptrDrawList, const ImVec2& _center, float _r
 
 
 // --------------------------------------------------------------------------------------------------------------------
-void ImGui::AddRectangle(ImDrawList* _ptrDrawList, const ImVec2& _center, const ImVec2& _sideA, const ImVec2& _sideB, const ImColor& _color, float _thickness) {
+void ImGui::AddRectangle(ImDrawList* _ptrDrawList, const ImVec2& _center, const ImVec2& _sideA, const ImVec2& _sideB, float _tilt, const ImColor& _color, float _thickness) {
   ImVec2 points[4];
   points[0] = _center + ImVec2(   _sideA.x - _sideB.x,   _sideA.y - _sideB.y);
   points[1] = _center + ImVec2( - _sideA.x - _sideB.x, - _sideA.y - _sideB.y);
@@ -1302,6 +1328,15 @@ void ImGui::AddRectangle(ImDrawList* _ptrDrawList, const ImVec2& _center, const 
 void ImGui::AddSquare(ImDrawList* _ptrDrawList, const ImVec2& _center, float _side, float _tilt, const ImColor& _color, float _thickness) {
   _ptrDrawList->PathArcTo(_center, _side, _tilt-IM_PI/4.0f, _tilt+(5.0f*IM_PI/4.0f), 3);
   _ptrDrawList->PathStroke(_color, true);
+
+  float r, theta, IM_PI_2 = IM_PI/2;
+  ImVec2 marks[4];
+  for (int i = 0; i < 4; i++) {
+    theta = i*IM_PI_2;
+    r = _side/ImSqrt(2);
+    marks[i] = _center+ImVec2(r*ImCos(theta+_tilt), r*ImSin(theta+_tilt));
+    _ptrDrawList->AddLine(_center, marks[i], _color, _thickness);
+  }
 }
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -1315,7 +1350,7 @@ void ImGui::AddSquare(ImDrawList* _ptrDrawList, const ImVec2& _center, float _si
 
 
 // --------------------------------------------------------------------------------------------------------------------
-void ImGui::AddHLine(ImDrawList* _ptrDrawList,  const ImVec2& _point0, const ImVec2& _point1, const ImColor& _color, float _thickness) {
+void ImGui::AddLine(ImDrawList* _ptrDrawList,  const ImVec2& _point0, const ImVec2& _point1, const ImColor& _color, float _thickness) {
   _ptrDrawList->AddLine(_point0, _point1, _color);
 }
 // --------------------------------------------------------------------------------------------------------------------
@@ -1330,7 +1365,28 @@ void ImGui::AddHLine(ImDrawList* _ptrDrawList,  const ImVec2& _point0, const ImV
 
 
 // --------------------------------------------------------------------------------------------------------------------
-void ImGui::AddVLine(ImDrawList* _ptrDrawList,  const ImVec2& _point0, const ImVec2& _point1, const ImColor& _color, float _thickness) {
-  _ptrDrawList->AddLine(_point0, _point1, _color);
+void ImGui::AddHLine(ImDrawList* _ptrDrawList,  const ImVec2& _point, float& _left, float& _right, const ImColor& _color, float _thickness) {
+  ImVec2 point0 = _point, point1 = _point;
+  point0.x = _point.x + _right;
+  point1.x = _point.x - _left;
+  _ptrDrawList->AddLine(point0, point1, _color, _thickness);
+}
+// --------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+// --------------------------------------------------------------------------------------------------------------------
+void ImGui::AddVLine(ImDrawList* _ptrDrawList,  const ImVec2& _point, float& _top, float& _bottom, const ImColor& _color, float _thickness) {
+  ImVec2 point0 = _point, point1 = _point;
+  point0.y = _point.y + _top;
+  point1.y = _point.y - _bottom;
+  _ptrDrawList->AddLine(point0, point1, _color, _thickness);
 }
 // ====================================================================================================================

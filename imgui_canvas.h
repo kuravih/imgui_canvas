@@ -275,11 +275,13 @@ namespace ImGui
   IMGUI_API int DrawCanvas(const char* _label, const ImVec2& _viewSize, const ImVec2& _canvasSize, std::vector<ImGuiCanvasShape>& _shapes, ImTextureID _textureId, uint8_t* mask, bool _updateMask=false, const ImColor& _borderColor=WHITE, const ImColor& _bgColor=ImColor(50,50,50,255), ImU32 _flags=0);
   IMGUI_API int DrawCanvas(const char* _label, const ImVec2& _viewSize, const ImVec2& _canvasSize, ImTextureID _textureId, const ImColor& _borderColor=WHITE, const ImColor& _bgColor=ImColor(50,50,50,255), ImU32 _flags=0);
 
-  IMGUI_API void AddCircle(ImDrawList* _ptrDrawList, const ImVec2& _center, float _radius, const ImColor& _color=WHITE, int _numSegments=32, float _thickness=1.0f);
+  IMGUI_API void AddCircle(ImDrawList* _ptrDrawList, const ImVec2& _center, float _radius, float _tilt, const ImColor& _color=WHITE, int _numSegments=32, float _thickness=1.0f);
   IMGUI_API void AddEllipse(ImDrawList* _ptrDrawList, const ImVec2& _center, float _radiusA, float _radiusB, float _tilt, const ImColor& _color=WHITE, int _numSegments=64, float _thickness=1.0f);
   IMGUI_API void AddSquare(ImDrawList* _ptrDrawList, const ImVec2& _center, float _side, float _tilt, const ImColor& _color=WHITE, float _thickness=1.0f);
-  IMGUI_API void AddRectangle(ImDrawList* _ptrDrawList, const ImVec2& _center, const ImVec2& _sideA, const ImVec2& _sideB, const ImColor& _color=WHITE, float _thickness=1.0f);
-  IMGUI_API void AddHLine(ImDrawList* _ptrDrawList, const ImVec2& _point0, const ImVec2& _point1, const ImColor& _color=WHITE, float _thickness=1.0f);
-  IMGUI_API void AddVLine(ImDrawList* _ptrDrawList, const ImVec2& _point0, const ImVec2& _point1, const ImColor& _color=WHITE, float _thickness=1.0f);
+  IMGUI_API void AddRectangle(ImDrawList* _ptrDrawList, const ImVec2& _center, const ImVec2& _sideA, const ImVec2& _sideB, float _tilt, const ImColor& _color=WHITE, float _thickness=1.0f);
+  IMGUI_API void AddLine(ImDrawList* _ptrDrawList, const ImVec2& _point0, const ImVec2& _point1, const ImColor& _color=WHITE, float _thickness=1.0f);
+  IMGUI_API void AddHLine(ImDrawList* _ptrDrawList, const ImVec2& _point, float& _left, float& _right, const ImColor& _color=WHITE, float _thickness=1.0f);
+  IMGUI_API void AddVLine(ImDrawList* _ptrDrawList, const ImVec2& _point, float& _top, float& _bottom, const ImColor& _color=WHITE, float _thickness=1.0f);
+
 }
 // ====================================================================================================================
