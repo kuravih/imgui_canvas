@@ -561,7 +561,7 @@ bool ImGui::DrawShapes(const char* _label, const ImVec2& _origin, const ImVec2& 
   static char centerLabel[128];
   static char ctrlPointLabel[128];
   static ImGuiCanvasShape::CtrlPoint ctrlPoint;
-  static ImVec2 transformedCenter, transformedCtrlPoint, transformedCenterMark[4];
+  static ImVec2 transformedCenter, transformedCtrlPoint;
   static float transformedRadius;
   static float angle;
   static float xrate=0.5, xmin=0, xmax=_canvasSize.x;
