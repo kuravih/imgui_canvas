@@ -206,7 +206,7 @@ int main (int argc, char** argv) {
       shader.UpdateRenderBuffer(&renderBuffers, width, height, &frameBuffers, &compositeTexture);
 
       {
-        viewWindowSize.x = ImGui::GetContentRegionAvailWidth();
+        viewWindowSize.x = ImGui::GetContentRegionAvail().x;
         viewSize.x = viewWindowSize.x - 14;
         viewSize.y = (int)(viewSize.x*imageAspectRatio);
         viewWindowSize.y = viewSize.y + 14;
